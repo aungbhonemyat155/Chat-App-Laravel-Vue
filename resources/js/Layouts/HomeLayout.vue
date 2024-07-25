@@ -7,17 +7,16 @@ import SettingSidebar from "@/Components/SettingSidebar.vue"
 import AddFriendPage from "@/Pages/Mix/AddFriendPage.vue"
 import NotificationPage from "@/Pages/Mix/NotificationPage.vue"
 import SettingPage from "@/Pages/Mix/SettingPage.vue"
-import FriendListPage from "@/Pages/Mix/FriendListPage.vue";
+import FriendListPage from "@/Pages/Mix/FriendListPage.vue"
 import { onMounted, ref } from "vue"
 import { useMainStore } from '../stores/MainStore'
 import { storeToRefs } from 'pinia'
+import LoadingScreen from "@/Components/LoadingScreen.vue";
 
 const store = useMainStore()
-const { settingToggle, searchFriToggle, notiToggle, messages, emptyBox, editToggle, userData, friendListToggle, contentBox } = storeToRefs(store)
+const { settingToggle, searchFriToggle, notiToggle, messages, emptyBox, editToggle, userData, friendListToggle, contentBox, friendLists, loadingScreen } = storeToRefs(store)
 
 const searchResult = ref("");
-
-const messageBox = ref("")
 
 onMounted(() => {
     Echo.private('App.Models.User.' + userData.value.user.id)
@@ -61,16 +60,8 @@ onMounted(() => {
         <!-- setting side bar toggle  -->
 
         <!-- content side  -->
-        <div v-if="contentBox" class="col-span-9 border-l border-l-slate-800 bg-gray-900 flex flex-col h-screen">
-            <ContentsArea class="basis-[93%] flex flex-col-reverse overflow-y-scroll" :messages="messages"></ContentsArea>
-
-            <!-- message text box  -->
-            <div class="basis-[7%] bg-gray-900 flex items-center p-3">
-                <TextInput v-model="messageBox" placeholder="Text Here...." class="flex-1 border-none outline-none"></TextInput>
-                <button class="px-2 hover:bg-slate-700 py-2">Send <span><i class="fa-regular fa-paper-plane"></i></span></button>
-            </div>
-            <!-- message text box  -->
-        </div>
+        <ContentsArea v-if="contentBox"></ContentsArea>
+        <!-- content side  -->
 
         <div v-if="!contentBox && emptyBox" class="col-span-9 bg-gray-800 flex h-screen justify-center items-center">
             <span class="bg-slate-600 px-2 text-gray-200 py-1 font-semibold rounded-xl">Select a chat to start messaging</span>
@@ -83,5 +74,7 @@ onMounted(() => {
         <SettingPage class="col-span-9" v-if="editToggle"></SettingPage>
 
         <FriendListPage class="col-span-9" v-if="friendListToggle"></FriendListPage>
+
+        <LoadingScreen class="col-span-9" v-if="loadingScreen"></LoadingScreen>
     </main>
 </template>

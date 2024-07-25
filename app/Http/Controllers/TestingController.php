@@ -367,7 +367,7 @@ class TestingController extends Controller
             $query->where('from_user_id', $friend_id)
                 ->where('to_user_id', $user);
         })->orderBy('id', 'desc')
-        ->paginat(20);
+        ->paginate(20);
 
         return response()->json($messages, 200);
     }

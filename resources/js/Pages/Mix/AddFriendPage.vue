@@ -151,7 +151,7 @@ const testing = () => {
                     <div v-for="(item, index) in data" :key="index" class="grid grid-cols-12 p-2 items-center text-center text-slate-200 bg-gray-800 my-2 rounded-xl py-3 w-4/6">
                         <div class="flex items-center ms-4" :class="{'col-span-9' : userData.user.id == item.first_user_id || item.first_user_id == null || (item.second_user_id == userData.user.id && item.is_delete) || item.is_approve, 'col-span-8' : userData.user.id == item.second_user_id && !item.is_approve && !item.is_delete}">
                             <span>
-                                <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/default_profile.png'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
+                                <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
                             </span>
                             <span class="text-md font-semibold">
                                 {{ item.name }}
@@ -161,7 +161,7 @@ const testing = () => {
                             <button class="px-2 py-2 bg-blue-600 bg-opacity-50 rounded-md  min-w-4/6 shadow-inner" v-if="userData.user.id == item.second_user_id" @click="sendFriReq(item.friend_id,index)">Add Friend</button>
                             <button class="px-2 py-2 bg-slate-600 bg-opacity-50 rounded-md min-w-4/6 shadow-inner" v-if="userData.user.id == item.first_user_id">Delete</button>
                         </span>
-                        <span v-if="(userData.user.id == item.first_user_id || item.first_user_id == null) && !item.is_delete" class="col-span-3 font-semibold">
+                        <span v-if="!item.friend_list_id || (item.first_user_id == userData.user.id && !item.is_approve && !item.delete)" class="col-span-3 font-semibold">
                             <button class="px-2 py-2 bg-slate-600 bg-opacity-50 rounded-md min-w-4/6 shadow-inner" v-if="item.friend_list_id && !item.is_approve && userData.user.id == item.first_user_id && !item.is_delete" @click="cancelFriReq(item.friend_list_id, index)">Cancel Request</button>
                             <button class="px-2 py-2 bg-blue-600 bg-opacity-50 rounded-md  min-w-4/6 shadow-inner" v-if="!item.friend_list_id" @click="sendFriReq(item.friend_id,index)">Add Friend</button>
                         </span>

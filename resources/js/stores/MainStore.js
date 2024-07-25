@@ -1,3 +1,4 @@
+import axios from "axios";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
@@ -13,6 +14,8 @@ export const useMainStore = defineStore( 'mainStore', () => {
     const friendListToggle = ref(false)
     const friendLists = ref(null)
     const contentBox = ref(false)
+    const friendIndex = ref(null)
+    const loadingScreen = ref(true)
     //getter
 
 
@@ -100,13 +103,37 @@ export const useMainStore = defineStore( 'mainStore', () => {
         friendLists.value = $data
     }
 
-    function contentBoxToggle(){
-        toggleOff()
+    function contentBoxToggle(id, index){
+        toggleOff();
+        emptyBox.value = false
+
+        if(!friendLists.value.data[index].messages){
+            setTimeout(() => testing(id, index), 3000)
+        }else{
+            setTimeout(testingTwo, 3000)
+        }
+    }
+
+    function testing(id, index){
+        axios.get('messages/'+id).then(response => {
+            friendLists.value.data[index].messages = response.data
+
+            contentBox.value = true
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+
+    function testingTwo(){
         contentBox.value = true
     }
 
     function setMessage(index, messages){
         friendLists.value.data[index].messages = messages
+    }
+
+    function setFriendIndex(index){
+        friendIndex.value = index
     }
 
     return { settingToggle,
@@ -119,6 +146,8 @@ export const useMainStore = defineStore( 'mainStore', () => {
         friendListToggle,
         friendLists,
         contentBox,
+        friendIndex,
+        loadingScreen,
         settingFun,
         searchFriFun,
         notiFun,
@@ -131,6 +160,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         unreadNotiCountSet,
         setFriendLists,
         contentBoxToggle,
-        setMessage
+        setMessage,
+        setFriendIndex
     }
 })
