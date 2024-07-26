@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function () {
     Route::get('notification/refresh', [TestingController::class, 'notiRefresh']);
     //delete friend request
     Route::get('friend/request/delete/{friend_list_id}', [TestingController::class, 'deleteFriReq']);
+    //send message
+    Route::post('send/message/{friend_id}',[TestingController::class, 'sendMessage']);
 });
 
 Route::get("/controller/testing/{user_id}", [TestingController::class, "controllerTesting"]);

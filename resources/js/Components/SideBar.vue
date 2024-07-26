@@ -11,12 +11,10 @@ const props = defineProps({
 
 const store = useMainStore()
 
-const { friendLists } = storeToRefs(store)
+const { friendLists, friendIndex } = storeToRefs(store)
 
 const messageToggle = (id, index) => {
     store.contentBoxToggle(id, index)
-
-    store.setFriendIndex(index)
 }
 
 const target = ref(null)
@@ -43,7 +41,7 @@ const { stop } = useIntersectionObserver(
 <template>
     <section>
         <div v-for="(item,index) in friendLists.data" :key="index">
-            <div v-if="item.is_approve" class="flex items-start mb-3" @click="messageToggle(item.friend_id, index)">
+            <div v-if="item.is_approve" class="flex items-start p-1 hover:bg-gray-800" :class="{'bg-gray-700' : index == friendIndex}" @click="messageToggle(item.friend_id, index)">
                 <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class="mr-5 rounded-full" style="width: 50px; height: 50px; object-fit: cover;">
                 <div class="flex flex-col mt-1">
                     <span class="text-white font-bold">{{ item.name }}</span>

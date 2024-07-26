@@ -372,6 +372,23 @@ class TestingController extends Controller
         return response()->json($messages, 200);
     }
 
+    //send message
+    public function sendMessage($friend_id, Request $request){
+        $message = Messages::create([
+            'from_user_id' => auth()->user()->id,
+            'to_user_id' => $friend_id,
+            'message' => $request->message
+        ]);
+
+        $friendList = FriendLists::where("id",$request->friend_list_id)->update(['last_message' => $message->toJson()]);
+
+        return response()->json([
+            'status' => true,
+            'message' => $message,
+            'friend_list' => $friendList
+        ], 200,);
+    }
+
     public function controllerTesting($user){
         $friendData = FriendLists::join('users', function ($join) use ($user) {
             $join->on(function ($query) use ($user) {

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger("second_user_id");
             $table->boolean("is_approve")->default(false);
             $table->boolean("is_delete")->default(false);
-            $table->text("last_message")->nullable();
+            $table->json("last_message")->nullable();
             $table->timestamps();
 
             $table->foreign('first_user_id')->references('id')->on('users')->onDelete('cascade');

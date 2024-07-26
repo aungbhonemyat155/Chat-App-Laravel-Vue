@@ -15,7 +15,8 @@ export const useMainStore = defineStore( 'mainStore', () => {
     const friendLists = ref(null)
     const contentBox = ref(false)
     const friendIndex = ref(null)
-    const loadingScreen = ref(true)
+    const loadingScreen = ref(false)
+    const tempMessages = ref(null)
     //getter
 
 
@@ -104,36 +105,28 @@ export const useMainStore = defineStore( 'mainStore', () => {
     }
 
     function contentBoxToggle(id, index){
-        toggleOff();
-        emptyBox.value = false
+        toggleOn();
+        friendIndex.value = index
 
         if(!friendLists.value.data[index].messages){
-            setTimeout(() => testing(id, index), 3000)
+            loadingScreen.value = true
+            axios.get('messages/'+id).then(response => {
+                friendLists.value.data[index].messages = response.data
+                tempMessages.value = response.data
+
+                loadingScreen.value = false
+                contentBox.value = true
+            }).catch(error => {
+                console.log(error);
+            })
         }else{
-            setTimeout(testingTwo, 3000)
+            tempMessages.value = friendLists.value.data[index].messages
+            contentBox.value = true
         }
     }
 
-    function testing(id, index){
-        axios.get('messages/'+id).then(response => {
-            friendLists.value.data[index].messages = response.data
-
-            contentBox.value = true
-        }).catch(error => {
-            console.log(error);
-        })
-    }
-
-    function testingTwo(){
-        contentBox.value = true
-    }
-
-    function setMessage(index, messages){
-        friendLists.value.data[index].messages = messages
-    }
-
-    function setFriendIndex(index){
-        friendIndex.value = index
+    function setMessage(data){
+        tempMessages.value = data
     }
 
     return { settingToggle,
@@ -148,6 +141,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         contentBox,
         friendIndex,
         loadingScreen,
+        tempMessages,
         settingFun,
         searchFriFun,
         notiFun,
@@ -161,6 +155,5 @@ export const useMainStore = defineStore( 'mainStore', () => {
         setFriendLists,
         contentBoxToggle,
         setMessage,
-        setFriendIndex
     }
 })
