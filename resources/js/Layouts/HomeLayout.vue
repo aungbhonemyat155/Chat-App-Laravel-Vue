@@ -19,8 +19,8 @@ const { settingToggle, searchFriToggle, notiToggle, messages, emptyBox, editTogg
 const searchResult = ref("");
 
 onMounted(() => {
-    Echo.private('App.Models.User.' + userData.value.user.id)
-    .notification((data) => {
+    Echo.private('App.Models.User.'+ userData.value.user.id)
+    .notification((notification) => {
         axios.get('/notification/refresh').then(response => {
             store.setNoti(response.data.noti)
             store.setFriendLists(response.data.friendLists)
@@ -30,7 +30,11 @@ onMounted(() => {
         }).catch(error => {
             console.log(error);
         })
+    });
 
+    var channel = Echo.channel('my-channel');
+    channel.listen('my-event', function(data) {
+      alert(JSON.stringify(data));
     });
 })
 </script>

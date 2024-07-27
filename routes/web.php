@@ -53,6 +53,6 @@ Route::middleware('auth')->group(function () {
     Route::post('send/message/{friend_id}',[TestingController::class, 'sendMessage']);
 });
 
-Route::get("/controller/testing/{user_id}", [TestingController::class, "controllerTesting"]);
+Route::get("/controller/testing", [TestingController::class, "controllerTesting"]);
 
 require __DIR__.'/auth.php';

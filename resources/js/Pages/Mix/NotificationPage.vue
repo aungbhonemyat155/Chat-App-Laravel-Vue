@@ -74,7 +74,7 @@ onMounted(() => {
         <div class="z-40 bg-gray-800 p-5 basis-[50%] rounded-xl mt-5 h-5/6">
             <div v-if="notifications.length">
                 <div v-for="(item,index) in notifications" :key="index" class="flex items-center bg-gray-700 p-3 rounded-lg mb-4">
-                    <img :src="item.data.sender_profile_photo ? '/storage/' + item.data.sender_profile_photo : '/storage/default_profile.png'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
+                    <img :src="item.data.sender_profile_photo ? '/storage/' + item.data.sender_profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
                     <div v-if="item.type == 'FriendRequest'">
                         <span class="font-bold">{{ item.data.sender_name }}</span>
                         <span> send you friend request</span>

@@ -8,7 +8,7 @@ import axios from 'axios'
 
 const store = useMainStore()
 
-const { userData } = storeToRefs(store)
+const { userData, settingToggle } = storeToRefs(store)
 
 const logout = () => {
     axios.post('logout').then(response => {

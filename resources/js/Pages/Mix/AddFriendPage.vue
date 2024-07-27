@@ -53,7 +53,7 @@ const sendFriReq = (friend_id, index) => {
             data.value[index].is_approve = response.data.data.is_approve
 
             let temp = friendLists.value
-            temp.push(response.data.data)
+            temp.data.push(response.data.data)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -72,8 +72,10 @@ const cancelFriReq = (friend_list_id, index) => {
             data.value[index].second_user_id = null
             data.value[index].is_approve = null
 
-            let temp = friendLists.value.filter((item) => item.friend_list_id != friend_list_id)
-            store.setFriendLists(temp)
+            let temp = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
+            let secTemp = friendLists.value
+            secTemp.data = temp
+            store.setFriendLists(secTemp)
         }else{
             modalContent.value = response.data.message
             testing()
@@ -86,10 +88,10 @@ const cancelFriReq = (friend_list_id, index) => {
 const friendAccept = (friend_list_id, index) => {
     axios.get("/friend/accept/"+friend_list_id).then((response) => {
         if(response.data.status){
-            let filtered = notifications.value.filter(item => item.id != response.data.notiId)
+            let filtered = notifications.value.data.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.map((item) => {
+            let temp = friendLists.value.data.map((item) => {
                 if(item.friend_list_id == friend_list_id){
                     item.is_approve = true
                 }
@@ -116,7 +118,7 @@ const deleteReq = (friend_list_id, index) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.filter(item => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value.data.filter(item => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
 
             data.value[index].is_delete = true

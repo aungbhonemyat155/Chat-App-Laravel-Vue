@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('BROADCAST_CONNECTION', 'null'),
+    'default' => env('BROADCAST_CONNECTION', 'pusher'),
 
     /*
     |--------------------------------------------------------------------------
@@ -75,6 +75,15 @@ return [
 
         'null' => [
             'driver' => 'null',
+        ],
+
+        'broadcasting' => [
+            'connections' => [
+                'pusher' => [
+                    'driver' => 'pusher',
+                    'broadcasting' => true,
+                ],
+            ],
         ],
 
     ],

@@ -129,6 +129,10 @@ export const useMainStore = defineStore( 'mainStore', () => {
         tempMessages.value = data
     }
 
+    function pushMessage(data){
+        tempMessages.value.data = data
+    }
+
     return { settingToggle,
         searchFriToggle,
         notiToggle,
@@ -155,5 +159,6 @@ export const useMainStore = defineStore( 'mainStore', () => {
         setFriendLists,
         contentBoxToggle,
         setMessage,
+        pushMessage
     }
 })

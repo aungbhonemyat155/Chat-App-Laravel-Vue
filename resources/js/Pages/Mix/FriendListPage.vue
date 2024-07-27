@@ -41,7 +41,7 @@ const friendAcceptFun = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.map((item) => {
+            let temp = friendLists.value.data.map((item) => {
                 if(item.friend_list_id == friend_list_id){
                     item.is_approve = true
                 }
@@ -62,7 +62,7 @@ const friendAcceptFun = (friend_list_id) => {
 const cancelFriReq = (friend_list_id) => {
     axios.get('/friend/request/cancel/'+friend_list_id).then((response) => {
         if(response.data.status){
-            let temp = friendLists.value.filter((item) => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -79,7 +79,7 @@ const unfriend = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.filter((item) => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -97,7 +97,7 @@ const deleteReq = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.filter(item => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value.data.filter(item => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -119,17 +119,17 @@ const showModal = () => {
 
 <template>
     <section class="w-full h-screen bg-slate-900 flex justify-center items-start relative">
-        <div class=" bg-slate-800 p-5 basis-[50%] rounded-xl mt-5 h-5/6">
-            <div class="flex justify-evenly text-slate-200">
+        <div class=" bg-slate-800 p-5 basis-[50%] rounded-xl mt-5 h-5/6 flex flex-col">
+            <div class="flex justify-evenly text-slate-200 basis-[7%]">
                 <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friends}" @click="friFun">Your Friends</span>
                 <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : urReq}" @click="urReqFun">Your Requests</span>
                 <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friReq}" @click="friReqFun">Friend Requests</span>
             </div>
-            <div v-if="friends && friendLists">
-                <div v-for="(item,index) in friendLists" :key="index" class="mt-4">
+            <div v-if="friends && friendLists.data" class="basis-[93%] overflow-y-scroll">
+                <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="item.is_approve" class="grid grid-cols-12 items-center text-center">
                         <span class="col-span-3 block mx-auto">
-                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/default_profile.png'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
+                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-6">{{ item.name }}</span>
                         <span class="col-span-3">
@@ -138,11 +138,11 @@ const showModal = () => {
                     </div>
                 </div>
             </div>
-            <div v-if="urReq && friendLists">
-                <div v-for="(item,index) in friendLists" :key="index" class="mt-4">
+            <div v-if="urReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
+                <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="!item.is_approve && userData.user.id == item.first_user_id" class="grid grid-cols-12 items-center text-center">
                         <span class="col-span-3 block mx-auto">
-                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/default_profile.png'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
+                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-6">{{ item.name }}</span>
                         <span class="col-span-3">
@@ -151,11 +151,11 @@ const showModal = () => {
                     </div>
                 </div>
             </div>
-            <div v-if="friReq && friendLists">
-                <div v-for="(item,index) in friendLists" :key="index" class="mt-4">
+            <div v-if="friReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
+                <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="!item.is_approve && userData.user.id == item.second_user_id" class="grid grid-cols-12 items-center text-center">
                         <span class="col-span-3 block mx-auto">
-                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/default_profile.png'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
+                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-5">{{ item.name }}</span>
                         <span class="col-span-4">

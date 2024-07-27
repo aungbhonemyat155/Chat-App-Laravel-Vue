@@ -17,10 +17,13 @@ const target = ref(null)
 const sendFun = () => {
     let trimmedStr = messageBox.value.trim()
     axios.post(`send/message/${friendLists.value.data[friendIndex.value].friend_id}`,{
-        'message' : messageBox.value,
+        'message' : trimmedStr,
         'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
     ).then(response => {
-        console.log(response.data);
+
+        let temp = [ response.data.message, ...tempMessages.value.data ]
+        store.pushMessage(temp)
+
         messageBox.value = ""
     }).catch(error => {
         console.log(error);

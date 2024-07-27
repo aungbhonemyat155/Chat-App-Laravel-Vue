@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TestingEvent;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Messages;
@@ -14,6 +15,7 @@ use App\Http\Resources\MessageResource;
 use App\Notifications\DeleteFriReq;
 use App\Notifications\FriendAccepted;
 use App\Notifications\FriReqCancel;
+use App\Notifications\SendMessage;
 use App\Notifications\Unfriend;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
@@ -380,7 +382,11 @@ class TestingController extends Controller
             'message' => $request->message
         ]);
 
-        $friendList = FriendLists::where("id",$request->friend_list_id)->update(['last_message' => $message->toJson()]);
+        FriendLists::where("id",$request->friend_list_id)->update(['last_message' => $message->toJson()]);
+        $friendList = FriendLists::where("id", $request->friend_list_id)->first();
+
+        $friend = User::find($friend_id);
+        Notification::send($friend, new SendMessage($friendList));
 
         return response()->json([
             'status' => true,
@@ -389,30 +395,7 @@ class TestingController extends Controller
         ], 200,);
     }
 
-    public function controllerTesting($user){
-        $friendData = FriendLists::join('users', function ($join) use ($user) {
-            $join->on(function ($query) use ($user) {
-                $query->on('friend_lists.first_user_id', '=', 'users.id')
-                    ->on('friend_lists.second_user_id', DB::raw($user));
-            })
-            ->orOn(function ($query) use ($user) {
-                $query->on('friend_lists.second_user_id', '=', 'users.id')
-                    ->on('friend_lists.first_user_id', DB::raw($user));
-            });
-        })
-        ->select(
-            'users.id as friend_id',
-            'users.name',
-            'users.email',
-            'users.profile_photo',
-            'friend_lists.id as friend_list_id',
-            'friend_lists.first_user_id',
-            'friend_lists.second_user_id',
-            'friend_lists.is_approve',
-            'friend_lists.is_delete'
-        )
-        ->paginate(10);
-
-        return response()->json($friendData, 200);
+    public function controllerTesting(){
+        event(new TestingEvent('hello world'));
     }
 }
