@@ -22,7 +22,8 @@ const friendAcceptFun = (friend_list_id, noti_id) => {
             let filtered = notifications.value.filter(item => item.id != noti_id)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.map((item) => {
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.map((item) => {
                 if(item.friend_list_id == friend_list_id){
                     item.is_approve = true
                 }
@@ -48,7 +49,8 @@ const deleteFriReq = (friend_list_id, noti_id) => {
             let filtered = notifications.value.filter(item => item.id != noti_id)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.filter(item => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.filter(item => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -75,7 +77,7 @@ onMounted(() => {
             <div v-if="notifications.length">
                 <div v-for="(item,index) in notifications" :key="index" class="flex items-center bg-gray-700 p-3 rounded-lg mb-4">
                     <img :src="item.data.sender_profile_photo ? '/storage/' + item.data.sender_profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
-                    <div v-if="item.type == 'FriendRequest'">
+                    <div v-if="item.type == 'FriendRequest' || item.type == 'broadcast.friendRequest'">
                         <span class="font-bold">{{ item.data.sender_name }}</span>
                         <span> send you friend request</span>
                         <div class="mt-2">
@@ -83,7 +85,7 @@ onMounted(() => {
                             <button class="py-2 px-3 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm text-white font-semibold" @click="deleteFriReq(item.data.friend_list_id, item.id)">Delete</button>
                         </div>
                     </div>
-                    <div v-if="item.type == 'FriendAccepted'">
+                    <div v-if="item.type == 'FriendAccepted' || item.type == 'broadcast.friendAccepted'">
                         <span class="font-bold">{{ item.data.sender_name }}</span>
                         <span> accept your friend request</span>
                     </div>

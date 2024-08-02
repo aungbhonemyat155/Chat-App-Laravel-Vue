@@ -20,9 +20,10 @@ const sendFun = () => {
         'message' : trimmedStr,
         'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
     ).then(response => {
-
         let temp = [ response.data.message, ...tempMessages.value.data ]
         store.pushMessage(temp)
+
+        friendLists.value.data[friendIndex.value].last_message = response.data.message
 
         messageBox.value = ""
     }).catch(error => {

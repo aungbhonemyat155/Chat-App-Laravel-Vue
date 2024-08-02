@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\TestingEvent;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Messages;
@@ -90,7 +89,7 @@ class TestingController extends Controller
         ->where(function ($query) use ($request){
             $query->where('users.name' , 'like', '%'.$request->query('key').'%')
                 ->orWhere('users.email', '=', $request->query('key'));
-        })->get();
+        })->where("users.id", "!=", auth()->user()->id)->get();
 
         return response()->json($result, 200);
     }
@@ -229,7 +228,7 @@ class TestingController extends Controller
 
         $data = [
             "notiId" => $notiId,
-            "user" => $first_user
+            "friendList" => $friendList
         ];
 
         Notification::send($second_user, new FriReqCancel($data));
@@ -264,8 +263,10 @@ class TestingController extends Controller
             'friend_lists.second_user_id',
             'friend_lists.is_approve',
             'friend_lists.is_delete',
-            'friend_lists.last_message'
+            'friend_lists.last_message',
+            'friend_lists.updated_at'
         )
+        ->orderBy('friend_lists.updated_at', 'desc')
         ->paginate(10);
 
         return response()->json($friendData, 200);
@@ -287,21 +288,18 @@ class TestingController extends Controller
             ], 200);
         }
 
-        $toUser = null;
-
-        if($friendList->first_user_id == auth()->user()->id){
-            $toUser = User::find($friendList->second_user_id);
-        }else{
-            $toUser = User::find($friendList->first_user_id);
-        }
+        $toUser = $friendList->first_user_id == auth()->user()->id ?
+            User::find($friendList->second_user_id) :
+            User::find($friendList->first_user_id);
 
         $friendList->delete();
-
-        Notification::send($toUser, new Unfriend());
 
         $noti = DatabaseNotification::whereJsonContains('data->friend_list_id', intval($friend_list_id))->first();
         $notiId = $noti->id;
         $noti->delete();
+
+        $friendList->setAttribute("notiId", $notiId);
+        Notification::send($toUser, new Unfriend($friendList));
 
         return response()->json([
             'status' => true,
@@ -396,6 +394,6 @@ class TestingController extends Controller
     }
 
     public function controllerTesting(){
-        event(new TestingEvent('hello world'));
+
     }
 }

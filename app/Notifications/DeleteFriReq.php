@@ -56,7 +56,7 @@ class DeleteFriReq extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-
+            "data" => $this->data->toJson()
         ]);
     }
 

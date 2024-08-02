@@ -53,7 +53,7 @@ const sendFriReq = (friend_id, index) => {
             data.value[index].is_approve = response.data.data.is_approve
 
             let temp = friendLists.value
-            temp.data.push(response.data.data)
+            temp.data = [ response.data.data, ...friendLists.value.data ]
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message

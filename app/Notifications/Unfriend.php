@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -15,7 +16,7 @@ class Unfriend extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(public $data)
     {
         //
     }
@@ -56,7 +57,7 @@ class Unfriend extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-
+            "data" => $this->data->toJson()
         ]);
     }
 

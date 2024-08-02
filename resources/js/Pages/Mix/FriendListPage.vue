@@ -2,6 +2,7 @@
 import { useMainStore } from "@/stores/MainStore";
 import { storeToRefs } from "pinia";
 import { onBeforeMount, ref } from "vue";
+import { useIntersectionObserver } from '@vueuse/core'
 import axios from "axios";
 
 const store = useMainStore()
@@ -41,7 +42,8 @@ const friendAcceptFun = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.data.map((item) => {
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.map((item) => {
                 if(item.friend_list_id == friend_list_id){
                     item.is_approve = true
                 }
@@ -62,7 +64,8 @@ const friendAcceptFun = (friend_list_id) => {
 const cancelFriReq = (friend_list_id) => {
     axios.get('/friend/request/cancel/'+friend_list_id).then((response) => {
         if(response.data.status){
-            let temp = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -79,7 +82,8 @@ const unfriend = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.filter((item) => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -97,7 +101,8 @@ const deleteReq = (friend_list_id) => {
             let filtered = notifications.value.filter(item => item.id != response.data.notiId)
             store.setNoti(filtered)
 
-            let temp = friendLists.value.data.filter(item => item.friend_list_id != friend_list_id)
+            let temp = friendLists.value
+            temp.data = friendLists.value.data.filter(item => item.friend_list_id != friend_list_id)
             store.setFriendLists(temp)
         }else{
             modalContent.value = response.data.message
@@ -107,6 +112,32 @@ const deleteReq = (friend_list_id) => {
         console.log(error);
     })
 }
+
+const target = ref(null)
+
+const { stop } = useIntersectionObserver(
+    target,
+    ([{ isIntersecting }], observerElement) => {
+        if(isIntersecting){
+            if(friendLists.value.next_page_url){
+                axios.get(`/friends/lists?page=${friendLists.value.current_page+1}`).then(response => {
+                    response.data.data.map(item => {
+                        if(item.last_message){
+                            item.last_message = JSON.parse(item.last_message)
+                        }
+                        return item;
+                    })
+
+                    let temp = [ ...friendLists.value.data, ...response.data.data ]
+                    response.data.data = temp
+                    store.setFriendLists(response.data)
+                }).catch(error => {
+                    console.log(error);
+                })
+            }
+        }
+    },
+)
 
 const showModal = () => {
     modalToggle.value = true
@@ -137,6 +168,7 @@ const showModal = () => {
                         </span>
                     </div>
                 </div>
+                <div ref="target"></div>
             </div>
             <div v-if="urReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
                 <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
@@ -150,6 +182,7 @@ const showModal = () => {
                         </span>
                     </div>
                 </div>
+                <div ref="target"></div>
             </div>
             <div v-if="friReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
                 <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
@@ -164,6 +197,7 @@ const showModal = () => {
                         </span>
                     </div>
                 </div>
+                <div ref="target"></div>
             </div>
         </div>
         <div v-if="modalToggle" class="absolute top-36 text-slate-600 font-semibold bg-slate-300 p-3 rounded-xl z-50">

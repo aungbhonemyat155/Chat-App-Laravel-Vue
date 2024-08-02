@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -12,12 +13,16 @@ class FriReqCancel extends Notification
 {
     use Queueable;
 
+    public $unreadNotiCount;
+
     /**
      * Create a new notification instance.
      */
     public function __construct(public array $data)
     {
         //
+        $user = User::find($this->data["friendList"]->first_user_id);
+        $this->unreadNotiCount = $user->unreadNotifications->count();
     }
 
     /**
@@ -58,7 +63,8 @@ class FriReqCancel extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-
+            "data" => json_encode($this->data),
+            "unreadNotiCount" => $this->unreadNotiCount
         ]);
     }
 

@@ -13,12 +13,17 @@ class FriendAccepted extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    public $user;
+
     /**
      * Create a new notification instance.
      */
     public function __construct(public $data)
     {
         //
+        $user = User::find($this->data->second_user_id);
+
+        $this->user = $user;
     }
 
     /**
@@ -56,21 +61,21 @@ class FriendAccepted extends Notification implements ShouldQueue
 
     public function toDatabase(object $notifiable): array
     {
-        $user = User::find($this->data->second_user_id);
 
         return [
             "friend_list_id" => $this->data->id,
-            "sender_id" => $user->id,
-            "sender_name" => $user->name,
-            "sender_email" => $user->email,
-            "sender_profile_photo" => $user->profile_photo,
+            "sender_id" => $this->user->id,
+            "sender_name" => $this->user->name,
+            "sender_email" => $this->user->email,
+            "sender_profile_photo" => $this->user->profile_photo,
         ];
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-
+            "data" => $this->data->toJson(),
+            "senderData" => $this->user
         ]);
     }
 

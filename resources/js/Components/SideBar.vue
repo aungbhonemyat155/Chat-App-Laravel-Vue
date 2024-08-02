@@ -1,7 +1,7 @@
 <script setup>
 import { useMainStore } from "@/stores/MainStore"
 import { storeToRefs } from "pinia"
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
 import axios from "axios"
 
@@ -18,7 +18,15 @@ const messageToggle = (id, index) => {
 }
 
 const target = ref(null)
-const targetIsVisible = ref(false)
+
+const truncateMessage = (message, maxWords) => {
+    const words = message.split(" ");
+    if (words.length <= maxWords) {
+        return message;
+    } else {
+        return words.slice(0, maxWords).join(" ") + "...";
+    }
+}
 
 const { stop } = useIntersectionObserver(
     target,
@@ -26,6 +34,13 @@ const { stop } = useIntersectionObserver(
         if(isIntersecting){
             if(friendLists.value.next_page_url){
                 axios.get(`/friends/lists?page=${friendLists.value.current_page+1}`).then(response => {
+                    response.data.data.map(item => {
+                        if(item.last_message){
+                            item.last_message = JSON.parse(item.last_message)
+                        }
+                        return item;
+                    })
+
                     let temp = [ ...friendLists.value.data, ...response.data.data ]
                     response.data.data = temp
                     store.setFriendLists(response.data)
@@ -45,7 +60,7 @@ const { stop } = useIntersectionObserver(
                 <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class="mr-5 rounded-full" style="width: 50px; height: 50px; object-fit: cover;">
                 <div class="flex flex-col mt-1">
                     <span class="text-white font-bold">{{ item.name }}</span>
-                    <span class="text-slate-500 text-sm">this is testing</span>
+                    <span v-if="item.last_message" class="text-slate-500 text-sm">{{ truncateMessage(item.last_message.message, 5) }}</span>
                 </div>
             </div>
         </div>

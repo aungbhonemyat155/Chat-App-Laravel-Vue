@@ -2,7 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -18,6 +20,9 @@ class SendMessage extends Notification implements ShouldQueue
     public function __construct(public $data)
     {
         //
+        $user = User::find($this->$data->from_user_id);
+
+        $this->data->setAttribute('senderData', $user);
     }
 
     /**
@@ -56,7 +61,7 @@ class SendMessage extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-
+            'data' => $this->data->toJson()
         ]);
     }
 

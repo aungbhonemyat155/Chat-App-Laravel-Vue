@@ -12,29 +12,52 @@ import { onMounted, ref } from "vue"
 import { useMainStore } from '../stores/MainStore'
 import { storeToRefs } from 'pinia'
 import LoadingScreen from "@/Components/LoadingScreen.vue";
+import BroadCast from "@/Functions/broadcastFunctions";
 
 const store = useMainStore()
-const { settingToggle, searchFriToggle, notiToggle, messages, emptyBox, editToggle, userData, friendListToggle, contentBox, friendLists, loadingScreen } = storeToRefs(store)
+const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, friendLists, loadingScreen, friendIndex, notifications } = storeToRefs(store)
 
 const searchResult = ref("");
 
 onMounted(() => {
-    Echo.private('App.Models.User.'+ userData.value.user.id)
-    .notification((notification) => {
-        axios.get('/notification/refresh').then(response => {
-            store.setNoti(response.data.noti)
-            store.setFriendLists(response.data.friendLists)
-            if(!notiToggle.value){
-                store.unreadNotiCountSet(response.data.unreadNotiCount)
-            }
-        }).catch(error => {
-            console.log(error);
-        })
-    });
 
-    var channel = Echo.channel('my-channel');
-    channel.listen('my-event', function(data) {
-      alert(JSON.stringify(data));
+    const broadcast = new BroadCast(store)
+
+    Echo.private('App.Models.User.'+ userData.value.user.id)
+    .notification((item) => {
+
+        item.data = JSON.parse(item.data)
+        console.log(item);
+
+        switch(item.type) {
+            case "broadcast.sendMessage": {
+                broadcast.sendMessage(item)
+                break;
+            }
+            case "broadcast.friendRequest": {
+                broadcast.friendRequest(item)
+                break;
+            }
+            case 'broadcast.friReqCancel': {
+                broadcast.friReqCancel(item)
+                break;
+            }
+            case 'broadcast.friendAccepted': {
+                broadcast.friAccepted(item)
+                break;
+            }
+            case 'broadcast.unfriend': {
+                broadcast.unfriend(item)
+                break;
+            }
+            case 'broadcast.deleteFriReq': {
+                broadcast.deleteFriReq(item)
+                break;
+            }
+            default: {
+                console.log(item);
+            }
+        }
     });
 })
 </script>

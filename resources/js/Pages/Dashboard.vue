@@ -11,12 +11,21 @@ const props = defineProps({
 
 const store = useMainStore()
 
-const { userData } = storeToRefs(store)
+const { userData, friendLists, notifications } = storeToRefs(store)
 
 onMounted(()=>{
+
+    let testing = props.data.friendLists.data.map(item => {
+        if(item.last_message){
+            item.last_message = JSON.parse(item.last_message)
+        }
+        return item;
+    })
+
     store.setUser(props.data.userData)
     store.setNoti(props.data.notifications)
     store.setFriendLists(props.data.friendLists)
+
 })
 
 </script>
@@ -24,7 +33,7 @@ onMounted(()=>{
 <template>
     <Head title="Dashboard" />
 
-    <HomeLayout v-if="userData"></HomeLayout>
+    <HomeLayout v-if="userData && friendLists && notifications"></HomeLayout>
 </template>
 
 <style>

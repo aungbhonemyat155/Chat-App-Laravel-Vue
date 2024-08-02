@@ -159,6 +159,6 @@ export const useMainStore = defineStore( 'mainStore', () => {
         setFriendLists,
         contentBoxToggle,
         setMessage,
-        pushMessage
+        pushMessage,
     }
 })
