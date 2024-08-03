@@ -374,8 +374,9 @@ class TestingController extends Controller
 
     //send message
     public function sendMessage($friend_id, Request $request){
+        $user = auth()->user();
         $message = Messages::create([
-            'from_user_id' => auth()->user()->id,
+            'from_user_id' => $user->id,
             'to_user_id' => $friend_id,
             'message' => $request->message
         ]);
@@ -384,7 +385,7 @@ class TestingController extends Controller
         $friendList = FriendLists::where("id", $request->friend_list_id)->first();
 
         $friend = User::find($friend_id);
-        Notification::send($friend, new SendMessage($friendList));
+        Notification::send($friend, new SendMessage($friendList, $message, $user));
 
         return response()->json([
             'status' => true,

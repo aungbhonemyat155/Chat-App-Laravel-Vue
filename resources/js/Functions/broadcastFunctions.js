@@ -3,15 +3,15 @@ import { storeToRefs } from "pinia";
 class BroadCast{
     constructor(store){
         this.store = store;
-        const { friendLists, notifications, notiToggle, userData } = storeToRefs(store)
+        const { friendLists, notifications, notiToggle, userData, friendIndex } = storeToRefs(store)
         this.friendLists = friendLists;
         this.notifications = notifications;
         this.notiToggle = notiToggle;
         this.userData = userData;
+        this.friendIndex = friendIndex;
     }
 
     friendRequest(item){
-        console.log("function working");
         let tempFriend = {
             first_user_id : item.data.first_user_id,
             second_user_id : item.data.second_user_id,
@@ -102,11 +102,38 @@ class BroadCast{
     }
 
     sendMessage(item){
-        this.friendLists.value.data.map(tempItem => {
-            if(tempItem.friend_list_id == item.data.id) tempItem.last_message = item.data.last_message
+        let removedValue;
+        let temp = this.friendLists.value
 
-            return tempItem;
-        })
+        console.log(item);
+
+        item.message = JSON.parse(item.message)
+        item.senderData = JSON.parse(item.senderData)
+        // item.data.last_message = JSON.parse(item.data.last_message)
+
+        const index = this.friendLists.value.data.findIndex((tempItem) => tempItem.friend_list_id == item.data.id)
+
+        if(index != -1){
+            removedValue = temp.data.splice(index, 1)[0];
+            removedValue.last_message = item.message;
+
+            if(this.friendIndex.value < index) this.friendIndex.value = this.friendIndex.value + 1
+
+            if(removedValue.messages) removedValue.messages.data = [ item.message, ...removedValue.messages.data ]
+        }else{
+            let { id, ...friend_list } = item.data
+            removedValue = {
+                ...friend_list,
+                ...item.senderData,
+                friend_id : item.senderData.id,
+                friend_list_id : item.data.id
+            }
+
+            this.friendIndex.value = this.friendIndex.value + 1
+        }
+
+        temp.data = [ removedValue, ...temp.data ]
+        this.store.setFriendLists(temp)
     }
 }
 

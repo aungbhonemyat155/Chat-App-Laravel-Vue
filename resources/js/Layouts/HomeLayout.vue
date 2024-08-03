@@ -15,7 +15,7 @@ import LoadingScreen from "@/Components/LoadingScreen.vue";
 import BroadCast from "@/Functions/broadcastFunctions";
 
 const store = useMainStore()
-const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, friendLists, loadingScreen, friendIndex, notifications } = storeToRefs(store)
+const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, loadingScreen } = storeToRefs(store)
 
 const searchResult = ref("");
 
@@ -27,7 +27,6 @@ onMounted(() => {
     .notification((item) => {
 
         item.data = JSON.parse(item.data)
-        console.log(item);
 
         switch(item.type) {
             case "broadcast.sendMessage": {

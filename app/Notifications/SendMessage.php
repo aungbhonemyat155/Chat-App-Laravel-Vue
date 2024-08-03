@@ -17,12 +17,9 @@ class SendMessage extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(public $data)
+    public function __construct(public $friendList, public $message, public $user)
     {
         //
-        $user = User::find($this->$data->from_user_id);
-
-        $this->data->setAttribute('senderData', $user);
     }
 
     /**
@@ -32,7 +29,7 @@ class SendMessage extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -44,6 +41,23 @@ class SendMessage extends Notification implements ShouldQueue
                     ->line('The introduction to the notification.')
                     ->action('Notification Action', url('/'))
                     ->line('Thank you for using our application!');
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+
+        return [
+            "message_id" => $this->message->id,
+            "from_user_id" => $this->message->from_user_id,
+            "to_user_id" => $this->message->to_user_id,
+            "message" => $this->message->message,
+            "created_at" => $this->message->created_at
+        ];
+    }
+
+    public function databaseType(object $notifiable): string
+    {
+        return 'Message';
     }
 
     /**
@@ -61,7 +75,9 @@ class SendMessage extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'data' => $this->data->toJson()
+            'data' => $this->friendList->toJson(),
+            'message' => $this->message->toJson(),
+            'senderData' => $this->user->toJson()
         ]);
     }
 
