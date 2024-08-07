@@ -25,7 +25,7 @@ onMounted(()=>{
     store.setUser(props.data.userData)
     store.setNoti(props.data.notifications)
     store.setFriendLists(props.data.friendLists)
-
+    store.setMessageNoti(props.data.messageNotifications)
 })
 
 </script>

@@ -68,7 +68,11 @@ class SendMessage extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            "message_id" => $this->message->id,
+            "from_user_id" => $this->message->from_user_id,
+            "to_user_id" => $this->message->to_user_id,
+            "message" => $this->message->message,
+            "created_at" => $this->message->created_at
         ];
     }
 

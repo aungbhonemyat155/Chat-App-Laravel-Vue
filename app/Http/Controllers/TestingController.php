@@ -27,6 +27,13 @@ class TestingController extends Controller
         $user = User::find($request->user()->id);
         $response = $this->getFriLists();
         $result = json_decode($response->getContent(), true);
+        $notifications = $user->notifications()->where('type', '!=', "Message")->get();
+        $messageNotifications = $user->notifications()
+            ->where('type', 'Message')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->data['from_user_id'];
+            });
 
         $data = [
             'userData' => [
@@ -35,8 +42,9 @@ class TestingController extends Controller
                 'user' => $user->toArray(),
                 'unreadNotiCount' => $user->unreadNotifications->count()
             ] ,
-            'notifications' => auth()->user()->notifications,
-            'friendLists' => $result
+            'notifications' => $notifications,
+            'friendLists' => $result,
+            'messageNotifications' => $messageNotifications
         ];
 
         return Inertia::render('Dashboard',["data" => $data]);
@@ -166,7 +174,9 @@ class TestingController extends Controller
     //read the unread notification
     public function readNoti(){
         foreach (auth()->user()->unreadNotifications as $notification) {
-            $notification->markAsRead();
+            if($notification->type != "Message"){
+                $notification->markAsRead();
+            }
         }
     }
 
@@ -394,7 +404,26 @@ class TestingController extends Controller
         ], 200,);
     }
 
-    public function controllerTesting(){
+    //read message
+    public function readMessage($id){
+        $user = User::find(auth()->user()->id);
+        $user->notifications()
+            ->where('type', 'Message')
+            ->whereJsonContains('data->from_user_id', intval($id))
+            ->delete();
+    }
 
+    public function controllerTesting($id){
+        $user = User::find($id);
+        $notifications = $user->notifications()->where("type", "Message")->get();
+        // $notifications = $notifications->filter(function ($item){
+        //     return $item->type == "Message";
+        // });
+
+        // $groupedNotifications = $notifications->groupBy(function ($notification) {
+        //     return $notification->data['from_user_id'];
+        // });
+
+        return response()->json($notifications, 200);
     }
 }

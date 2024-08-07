@@ -24,6 +24,11 @@ const sendFun = () => {
         store.pushMessage(temp)
 
         friendLists.value.data[friendIndex.value].last_message = response.data.message
+        if(friendIndex.value != 0){
+            let removedValue = friendLists.value.data.splice(friendIndex.value, 1)[0];
+            friendLists.value.data.unshift(removedValue)
+            friendIndex.value = 0
+        }
 
         messageBox.value = ""
     }).catch(error => {

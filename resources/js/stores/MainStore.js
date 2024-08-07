@@ -17,6 +17,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
     const friendIndex = ref(null)
     const loadingScreen = ref(false)
     const tempMessages = ref(null)
+    const messageNoti = ref(null)
     //getter
 
 
@@ -133,6 +134,10 @@ export const useMainStore = defineStore( 'mainStore', () => {
         tempMessages.value.data = data
     }
 
+    function setMessageNoti(data){
+        messageNoti.value = data
+    }
+
     return { settingToggle,
         searchFriToggle,
         notiToggle,
@@ -146,6 +151,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         friendIndex,
         loadingScreen,
         tempMessages,
+        messageNoti,
         settingFun,
         searchFriFun,
         notiFun,
@@ -160,5 +166,6 @@ export const useMainStore = defineStore( 'mainStore', () => {
         contentBoxToggle,
         setMessage,
         pushMessage,
+        setMessageNoti
     }
 })

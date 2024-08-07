@@ -11,20 +11,27 @@ const props = defineProps({
 
 const store = useMainStore()
 
-const { friendLists, friendIndex } = storeToRefs(store)
+const { friendLists, friendIndex, messageNoti } = storeToRefs(store)
+
 
 const messageToggle = (id, index) => {
     store.contentBoxToggle(id, index)
+    if(messageNoti.value[`${id}`]){
+        delete messageNoti.value[`${id}`]
+
+        axios.get("message/read/"+id).catch(error => {
+            console.log(error)
+        })
+    }
 }
 
 const target = ref(null)
 
-const truncateMessage = (message, maxWords) => {
-    const words = message.split(" ");
-    if (words.length <= maxWords) {
+const truncateMessage = (message) => {
+    if (message.length <= 30) {
         return message;
     } else {
-        return words.slice(0, maxWords).join(" ") + "...";
+        return message.slice(0, 30) + "     ...";
     }
 }
 
@@ -56,12 +63,13 @@ const { stop } = useIntersectionObserver(
 <template>
     <section>
         <div v-for="(item,index) in friendLists.data" :key="index">
-            <div v-if="item.is_approve" class="flex items-start p-1 hover:bg-gray-800" :class="{'bg-gray-700' : index == friendIndex}" @click="messageToggle(item.friend_id, index)">
-                <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class="mr-5 rounded-full" style="width: 50px; height: 50px; object-fit: cover;">
-                <div class="flex flex-col mt-1">
+            <div v-if="item.is_approve" class="grid grid-cols-12 p-1 hover:bg-gray-800" :class="{'bg-gray-700' : index == friendIndex}" @click="messageToggle(item.friend_id, index)">
+                <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class=" rounded-full col-span-3" style="width: 50px; height: 50px; object-fit: cover;">
+                <div class="flex flex-col mt-1 col-span-8">
                     <span class="text-white font-bold">{{ item.name }}</span>
-                    <span v-if="item.last_message" class="text-slate-500 text-sm">{{ truncateMessage(item.last_message.message, 5) }}</span>
+                    <span v-if="item.last_message" class="text-slate-500 text-sm">{{ truncateMessage(item.last_message.message) }}</span>
                 </div>
+                <div v-if="messageNoti[`${item.friend_id}`]" class="bg-blue-700 rounded-full w-min h-min p-1 px-3 self-center col-span-1 text-center text-xs font-bold">{{ messageNoti[`${item.friend_id}`].length }}</div>
             </div>
         </div>
         <div class="flex items-center mb-3">

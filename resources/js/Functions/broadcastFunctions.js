@@ -3,12 +3,13 @@ import { storeToRefs } from "pinia";
 class BroadCast{
     constructor(store){
         this.store = store;
-        const { friendLists, notifications, notiToggle, userData, friendIndex } = storeToRefs(store)
+        const { friendLists, notifications, notiToggle, userData, friendIndex, messageNoti } = storeToRefs(store)
         this.friendLists = friendLists;
         this.notifications = notifications;
         this.notiToggle = notiToggle;
         this.userData = userData;
         this.friendIndex = friendIndex;
+        this.messageNoti = messageNoti
     }
 
     friendRequest(item){
@@ -105,8 +106,6 @@ class BroadCast{
         let removedValue;
         let temp = this.friendLists.value
 
-        console.log(item);
-
         item.message = JSON.parse(item.message)
         item.senderData = JSON.parse(item.senderData)
         // item.data.last_message = JSON.parse(item.data.last_message)
@@ -120,6 +119,24 @@ class BroadCast{
             if(this.friendIndex.value < index) this.friendIndex.value = this.friendIndex.value + 1
 
             if(removedValue.messages) removedValue.messages.data = [ item.message, ...removedValue.messages.data ]
+
+            if(index != this.friendIndex.value) {
+                if(this.messageNoti.value[`${removedValue.friend_id}`]){
+                    this.messageNoti.value[`${removedValue.friend_id}`].push(item.id)
+                }else{
+                    console.log("this is notivalue does not has an index block");
+                    let senderId = item.senderData.id;
+                    let temp = {};
+                    temp[`${senderId}`] = ["some value"];
+                    temp = { ...temp, ...this.messageNoti.value }
+                    this.store.setMessageNoti(temp)
+                }
+            }else{
+                console.log("this is friend index and index is equal block");
+                axios.get("message/read/"+item.senderData.id).catch(error => {
+                    console.log(error);
+                })
+            }
         }else{
             let { id, ...friend_list } = item.data
             removedValue = {
@@ -130,6 +147,17 @@ class BroadCast{
             }
 
             this.friendIndex.value = this.friendIndex.value + 1
+
+            if(this.messageNoti.value[`${item.senderData.id}`]){
+                this.messageNoti.value[`${item.senderData.id}`].push(item.id)
+            }else{
+                console.log("this is notivalue does not has an index block");
+                let senderId = item.senderData.id;
+                let temp = {};
+                temp[`${senderId}`] = "some value";
+                temp = { ...temp, ...this.messageNoti.value }
+                this.store.setMessageNoti(temp)
+            }
         }
 
         temp.data = [ removedValue, ...temp.data ]

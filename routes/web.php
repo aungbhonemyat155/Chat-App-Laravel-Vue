@@ -51,8 +51,10 @@ Route::middleware('auth')->group(function () {
     Route::get('friend/request/delete/{friend_list_id}', [TestingController::class, 'deleteFriReq']);
     //send message
     Route::post('send/message/{friend_id}',[TestingController::class, 'sendMessage']);
+    //read message
+    Route::get("message/read/{id}", [TestingController::class, 'readMessage']);
 });
 
-Route::get("/controller/testing", [TestingController::class, "controllerTesting"]);
+Route::get("/controller/testing/{id}", [TestingController::class, "controllerTesting"]);
 
 require __DIR__.'/auth.php';
