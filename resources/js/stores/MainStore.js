@@ -1,5 +1,6 @@
 import axios from "axios";
 import { defineStore } from "pinia";
+import MessageFormatter from "@/Functions/messageFormatter";
 import { ref } from "vue";
 
 export const useMainStore = defineStore( 'mainStore', () => {
@@ -112,6 +113,9 @@ export const useMainStore = defineStore( 'mainStore', () => {
         if(!friendLists.value.data[index].messages){
             loadingScreen.value = true
             axios.get('messages/'+id).then(response => {
+                let formatter = new MessageFormatter(response.data.data)
+                response.data.data = formatter.changeMessageDate()
+
                 friendLists.value.data[index].messages = response.data
                 tempMessages.value = response.data
 

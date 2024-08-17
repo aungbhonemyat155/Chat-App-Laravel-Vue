@@ -58,6 +58,10 @@ onMounted(() => {
             }
         }
     });
+
+    // console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)
+
+
 })
 </script>
 
