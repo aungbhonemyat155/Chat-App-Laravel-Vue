@@ -14,7 +14,8 @@ class TimeFormatter{
     }
 
     getTime(){
-        const localTimeString = this.formatter.format(this.date);
+        let localTimeString = this.formatter.format(this.date);
+        localTimeString = localTimeString.split(", ")
 
         return localTimeString;
     }

@@ -1,4 +1,5 @@
 import { storeToRefs } from "pinia";
+import TimeFormatter from "./dateTimeFormatter";
 
 class BroadCast{
     constructor(store){
@@ -107,6 +108,8 @@ class BroadCast{
         let temp = this.friendLists.value
 
         item.message = JSON.parse(item.message)
+        let formatter = new TimeFormatter(item.message.created_at)
+        item.message.created_at = formatter.getTime()
         item.senderData = JSON.parse(item.senderData)
         // item.data.last_message = JSON.parse(item.data.last_message)
 
@@ -121,19 +124,18 @@ class BroadCast{
             if(removedValue.messages) removedValue.messages.data = [ item.message, ...removedValue.messages.data ]
 
             if(index != this.friendIndex.value) {
-                if(this.messageNoti.value[`${removedValue.friend_id}`]){
-                    this.messageNoti.value[`${removedValue.friend_id}`].push(item.id)
+                if(this.messageNoti.value[`${item.message.from_user_id}`]){
+                    this.messageNoti.value[`${item.message.from_user_id}`].push(item.id)
                 }else{
-                    console.log("this is notivalue does not has an index block");
                     let senderId = item.senderData.id;
                     let temp = {};
                     temp[`${senderId}`] = ["some value"];
+
                     temp = { ...temp, ...this.messageNoti.value }
                     this.store.setMessageNoti(temp)
                 }
             }else{
-                console.log("this is friend index and index is equal block");
-                axios.get("message/read/"+item.senderData.id).catch(error => {
+                    axios.get("message/read/"+item.senderData.id).catch(error => {
                     console.log(error);
                 })
             }
@@ -146,16 +148,18 @@ class BroadCast{
                 friend_list_id : item.data.id
             }
 
-            this.friendIndex.value = this.friendIndex.value + 1
+            removedValue.last_message = JSON.parse(removedValue.last_message)
+
+            if(this.friendIndex.value)this.friendIndex.value = this.friendIndex.value + 1
 
             if(this.messageNoti.value[`${item.senderData.id}`]){
                 this.messageNoti.value[`${item.senderData.id}`].push(item.id)
             }else{
-                console.log("this is notivalue does not has an index block");
                 let senderId = item.senderData.id;
                 let temp = {};
-                temp[`${senderId}`] = "some value";
+                temp[`${senderId}`] = ["some value"];
                 temp = { ...temp, ...this.messageNoti.value }
+
                 this.store.setMessageNoti(temp)
             }
         }

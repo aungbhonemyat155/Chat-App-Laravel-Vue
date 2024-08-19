@@ -22,6 +22,9 @@ const sendFun = () => {
         'message' : trimmedStr,
         'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
     ).then(response => {
+        let formatter = new TimeFormatter(response.data.message.created_at)
+        response.data.message.created_at = formatter.getTime()
+
         let temp = [ response.data.message, ...tempMessages.value.data ]
         store.pushMessage(temp)
 
