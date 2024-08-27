@@ -149,22 +149,23 @@ const showModal = () => {
 </script>
 
 <template>
-    <section class="w-full h-screen bg-slate-900 flex justify-center items-start relative">
-        <div class=" bg-slate-800 p-5 basis-[50%] rounded-xl mt-5 h-5/6 flex flex-col">
-            <div class="flex justify-evenly text-slate-200 basis-[7%]">
-                <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friends}" @click="friFun">Your Friends</span>
-                <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : urReq}" @click="urReqFun">Your Requests</span>
-                <span class="font-semibold pb-2 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friReq}" @click="friReqFun">Friend Requests</span>
+    <section class="w-full h-screen bg-slate-900 flex justify-center items-start relative text-sm sm:text-base">
+        <div class=" bg-slate-800 p-1 sm:p-3 pt-0 md:pt-0 lg:pt-2 md:p-3 lg:p-5 basis-[100%] sm:basis-[80%] md:basis-[100%] xl:basis-[60%] sm:rounded-xl sm:mt-5 h-full sm:h-5/6 flex flex-col">
+            <div class="flex justify-evenly items-center text-slate-200 basis-[7%]">
+                <button class="md:hidden" @click="store.backToSetting"><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="font-semibold p-3 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friends}" @click="friFun">Your Friends</span>
+                <span class="font-semibold p-3 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : urReq}" @click="urReqFun">Your Requests</span>
+                <span class="font-semibold p-3 cursor-pointer" :class="{'border-b-blue-400 border-b-2' : friReq}" @click="friReqFun">Friend Requests</span>
             </div>
             <div v-if="friends && friendLists.data" class="basis-[93%] overflow-y-scroll">
                 <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="item.is_approve" class="grid grid-cols-12 items-center text-center">
-                        <span class="col-span-3 block mx-auto">
+                        <span class="col-span-3 block flex justify-center">
                             <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-6">{{ item.name }}</span>
                         <span class="col-span-3">
-                            <button class="py-2 px-3 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm text-white font-semibold me-4" @click="unfriend(item.friend_list_id)">Unfriend</button>
+                            <button class="py-2 px-3 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm text-white font-semibold sm:me-4" @click="unfriend(item.friend_list_id)">Unfriend</button>
                         </span>
                     </div>
                 </div>
@@ -173,7 +174,7 @@ const showModal = () => {
             <div v-if="urReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
                 <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="!item.is_approve && userData.user.id == item.first_user_id" class="grid grid-cols-12 items-center text-center">
-                        <span class="col-span-3 block mx-auto">
+                        <span class="col-span-3 block flex justify-center">
                             <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-6">{{ item.name }}</span>
@@ -187,7 +188,7 @@ const showModal = () => {
             <div v-if="friReq && friendLists.data" class="basis-[93%] overflow-y-scroll">
                 <div v-for="(item,index) in friendLists.data" :key="index" class="mt-4">
                     <div v-if="!item.is_approve && userData.user.id == item.second_user_id" class="grid grid-cols-12 items-center text-center">
-                        <span class="col-span-3 block mx-auto">
+                        <span class="col-span-3 block flex justify-center">
                             <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user.svg'" alt="" class="rounded-full" style="width: 40px; height: 40px; object-fit: cover;">
                         </span>
                         <span class="col-span-5">{{ item.name }}</span>

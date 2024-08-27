@@ -12,7 +12,8 @@ const { userData } = storeToRefs(store)
 </script>
 
 <template>
-    <section class="h-screen overflow-y-scroll bg-gray-900 text-slate-300">
+    <section class="h-screen overflow-y-scroll bg-gray-900 text-slate-300 relative">
+        <button @click="store.backToSetting" class="absolute top-3 left-4 md:hidden"><i class="fa-solid fa-chevron-left"></i></button>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <div class="p-4 sm:p-8 bg-gray-800 shadow sm:rounded-lg">

@@ -8,6 +8,7 @@ import AddFriendPage from "@/Pages/Mix/AddFriendPage.vue"
 import NotificationPage from "@/Pages/Mix/NotificationPage.vue"
 import SettingPage from "@/Pages/Mix/SettingPage.vue"
 import FriendListPage from "@/Pages/Mix/FriendListPage.vue"
+import SaveMessagePage from "@/Pages/Mix/SaveMessagePage.vue";
 import { onMounted, ref } from "vue"
 import { useMainStore } from '../stores/MainStore'
 import { storeToRefs } from 'pinia'
@@ -15,7 +16,7 @@ import LoadingScreen from "@/Components/LoadingScreen.vue";
 import BroadCast from "@/Functions/broadcastFunctions";
 
 const store = useMainStore()
-const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, loadingScreen } = storeToRefs(store)
+const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, loadingScreen, saveMessage } = storeToRefs(store)
 
 const searchResult = ref("");
 
@@ -68,16 +69,16 @@ onMounted(() => {
 <template>
     <main class="grid grid-cols-12 relative text-slate-300">
         <!-- side bar  -->
-        <div id="friendList" class="col-span-3 bg-gray-900 flex flex-col h-screen" :class="{'hidden' : settingToggle}">
+        <div id="friendList" class="col-span-12 md:col-span-5 lg:col-span-4 2xl:col-span-3 bg-gray-900 flex flex-col h-screen" :class="{'hidden' : settingToggle, 'hidden md:flex md:flex-col' : contentBox || loadingScreen}">
             <!-- nav-bar and search box  -->
-            <div class="bg-gray-900 py-3 px-5 flex justify-center">
+            <div class="bg-gray-900 py-3 px-5 flex justify-center basis-[7%]">
                 <SettingButton></SettingButton>
                 <TextInput class="flex-1 border-none outline-none bg-gray-800" v-model="searchResult" placeholder="Search...."></TextInput>
             </div>
             <!-- nav-bar and search box  -->
 
             <!-- user's friends lists  -->
-            <div class="p-2 flex-1 overflow-y-scroll">
+            <div class="p-2 basis-[93%] overflow-y-scroll">
                 <SideBar></SideBar>
             </div>
             <!-- user's friends lists  -->
@@ -86,25 +87,28 @@ onMounted(() => {
 
         <!-- setting side bar toggle  -->
         <div v-if="settingToggle && emptyBox" class="fixed inset-0 z-20" @click="store.settingFun"></div>
-        <SettingSidebar v-if="settingToggle" class="z-30 col-span-3 bg-gray-200"/>
+        <SettingSidebar v-if="settingToggle" class="z-30 h-screen col-span-12 md:col-span-5 lg:col-span-4 2xl:col-span-3 bg-gray-200"
+        :class="{'hidden' : searchFriToggle || notiToggle || editToggle || friendListToggle }"/>
         <!-- setting side bar toggle  -->
 
         <!-- content side  -->
         <ContentsArea v-if="contentBox"></ContentsArea>
         <!-- content side  -->
 
-        <div v-if="!contentBox && emptyBox" class="col-span-9 bg-gray-800 flex h-screen justify-center items-center">
+        <div v-if="(!contentBox && emptyBox)" class="hidden md:col-span-7 lg:col-span-8 2xl:col-span-9 bg-gray-800 md:flex h-screen justify-center items-center">
             <span class="bg-slate-600 px-2 text-gray-200 py-1 font-semibold rounded-xl">Select a chat to start messaging</span>
         </div>
         <!-- content side  -->
-        <AddFriendPage class="col-span-9" v-if="searchFriToggle"></AddFriendPage>
+        <AddFriendPage class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="searchFriToggle"></AddFriendPage>
 
-        <NotificationPage class="col-span-9" v-if="notiToggle"></NotificationPage>
+        <NotificationPage class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="notiToggle"></NotificationPage>
 
-        <SettingPage class="col-span-9" v-if="editToggle"></SettingPage>
+        <SettingPage class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="editToggle"></SettingPage>
 
-        <FriendListPage class="col-span-9" v-if="friendListToggle"></FriendListPage>
+        <FriendListPage class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="friendListToggle"></FriendListPage>
 
-        <LoadingScreen class="col-span-9" v-if="loadingScreen"></LoadingScreen>
+        <SaveMessagePage class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="saveMessage"></SaveMessagePage>
+
+        <LoadingScreen class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9" v-if="loadingScreen"></LoadingScreen>
     </main>
 </template>

@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Inertia\Inertia;
-use App\Models\Messages;
-use App\Models\FriendLists;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use App\Notifications\FriendRequest;
 use App\Http\Resources\MessageResource;
+use App\Mail\TestingMail;
+use App\Models\FriendLists;
+use App\Models\Messages;
+use App\Models\User;
 use App\Notifications\DeleteFriReq;
 use App\Notifications\FriendAccepted;
+use App\Notifications\FriendRequest;
 use App\Notifications\FriReqCancel;
 use App\Notifications\SendMessage;
 use App\Notifications\Unfriend;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class TestingController extends Controller
 {
@@ -413,17 +415,8 @@ class TestingController extends Controller
             ->delete();
     }
 
-    public function controllerTesting($id){
-        $user = User::find($id);
-        $notifications = $user->notifications()->where("type", "Message")->get();
-        // $notifications = $notifications->filter(function ($item){
-        //     return $item->type == "Message";
-        // });
-
-        // $groupedNotifications = $notifications->groupBy(function ($notification) {
-        //     return $notification->data['from_user_id'];
-        // });
-
-        return response()->json($notifications, 200);
+    public function controllerTesting(){
+        $email = new TestingMail();
+        Mail::to('aungbhonemyat648@gmail.com')->send($email);
     }
 }

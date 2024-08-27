@@ -73,7 +73,9 @@ onMounted(() => {
 
 <template>
     <section class="z-40 h-screen bg-gray-900 flex justify-center items-start relative text-slate-300">
-        <div class="z-40 bg-gray-800 p-5 basis-[50%] rounded-xl mt-5 h-5/6">
+        <button @click="store.backToSetting" class="absolute top-8 left-10 hidden sm:inline md:hidden"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="z-40 bg-gray-800 p-5 basis-[100%] sm:basis-[70%] md:basis-[80%] lg:basis-[50%] sm:rounded-xl sm:mt-5 h-full sm:h-5/6">
+            <button @click="store.backToSetting" class="mb-4 sm:hidden"><i class="fa-solid fa-chevron-left"></i></button>
             <div v-if="notifications.length">
                 <div v-for="(item,index) in notifications" :key="index" class="flex items-center bg-gray-700 p-3 rounded-lg mb-4">
                     <img :src="item.data.sender_profile_photo ? '/storage/' + item.data.sender_profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">

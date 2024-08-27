@@ -19,6 +19,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
     const loadingScreen = ref(false)
     const tempMessages = ref(null)
     const messageNoti = ref(null)
+    const saveMessage = ref(false)
     //getter
 
 
@@ -29,6 +30,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         notiToggle.value = false
         friendListToggle.value = false
         contentBox.value = false
+        saveMessage.value = false
         emptyBox.value = true
     }
 
@@ -38,6 +40,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         notiToggle.value = false
         friendListToggle.value = false
         emptyBox.value = false
+        saveMessage.value = false
         contentBox.value = false
     }
 
@@ -142,6 +145,32 @@ export const useMainStore = defineStore( 'mainStore', () => {
         messageNoti.value = data
     }
 
+    function backHome(){
+        toggleOff();
+        friendIndex.value = null
+    }
+
+    function backToSetting(){
+        toggleOff();
+        settingToggle.value = true
+    }
+
+    function saveMessageToggle(){
+        toggleOn();
+        friendIndex.value = null
+        loadingScreen.value = true
+        axios.get('save-messages').then(response => {
+            console.log(response.data);
+
+            tempMessages.value = response.data;
+            saveMessage.value = true
+
+            loadingScreen.value = false
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+
     return { settingToggle,
         searchFriToggle,
         notiToggle,
@@ -156,6 +185,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
         loadingScreen,
         tempMessages,
         messageNoti,
+        saveMessage,
         settingFun,
         searchFriFun,
         notiFun,
@@ -170,6 +200,9 @@ export const useMainStore = defineStore( 'mainStore', () => {
         contentBoxToggle,
         setMessage,
         pushMessage,
-        setMessageNoti
+        setMessageNoti,
+        backHome,
+        backToSetting,
+        saveMessageToggle
     }
 })

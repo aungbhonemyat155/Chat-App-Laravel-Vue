@@ -19,9 +19,9 @@ const logout = () => {
 </script>
 
 <template>
-    <div class="bg-gray-900 flex flex-col border-r border-r-slate-700 text-slate-100">
+    <div class="bg-gray-900 flex flex-col md:flex md:flex-col md:border-r md:border-r-slate-700 text-slate-100">
         <div class="flex justify-start items-center px-5 pb-5 m-5 border-b-2 border-b-slate-500">
-            <img :src="userData.user.profile_photo ? '/storage/' + userData.user.profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5" style="width: 60px; height: 60px; object-fit: cover;">
+            <img :src="userData.user.profile_photo ? '/storage/' + userData.user.profile_photo : '/storage/user.svg'" alt="" class="rounded-full mr-5 w-14 xl:w-16 object-cover">
             <div class="font-bold text-xl">{{ userData.user.name }}</div>
         </div>
         <div class="flex-1 flex flex-col justify-between p-5">

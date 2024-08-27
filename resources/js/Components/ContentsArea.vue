@@ -16,6 +16,8 @@ const messageBox = ref("")
 
 const target = ref(null)
 
+const dropDownToggle = ref(false)
+
 const sendFun = () => {
     let trimmedStr = messageBox.value.trim()
     axios.post(`send/message/${friendLists.value.data[friendIndex.value].friend_id}`,{
@@ -41,19 +43,6 @@ const sendFun = () => {
     })
 }
 
-const logTime = (time) => {
-    const timeStr = new TimeFormatter(time)
-    let temp = timeStr.getDayDate();
-
-    return temp
-}
-
-const tempDate = ref(logTime(friendLists.value.data[friendIndex.value].last_message.created_at))
-
-const logDate = (value) => {
-    tempDate.value = value
-    return tempDate.value
-}
 
 const { stop } = useIntersectionObserver(
     target,
@@ -74,11 +63,42 @@ const { stop } = useIntersectionObserver(
     },
 )
 
+const menuFun = () => {
+    dropDownToggle.value = !dropDownToggle.value
+}
+
+const backButtonFun = () => {
+    store.backHome();
+}
+
 </script>
 
 <template>
-    <section class="col-span-9 border-l border-l-slate-800 bg-gray-900 flex flex-col h-screen">
-        <div v-if="tempMessages.data.length > 0" class="basis-[93%] flex flex-col-reverse overflow-y-scroll">
+    <section class="col-span-12 md:col-span-7 lg:col-span-8 2xl:col-span-9 border-l border-l-slate-800 bg-gray-900 flex flex-col h-screen">
+        <div class="basis-[7%] bg-gray-900 border-b border-b-slate-800 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="ml-3 md:hidden inline" @click="backButtonFun()">
+                    <button><i class="fa-solid fa-chevron-left"></i></button>
+                </div>
+                <img v-if="friendIndex" :src="friendLists.data[friendIndex].profile_photo ?
+                    '/storage/' + friendLists.data[friendIndex].profile_photo :
+                    '/storage/user3.svg'"
+                    alt="User Image"
+                    class="ml-3 w-10 h-10 rounded-full object-cover md:hidden inline"
+                >
+                <span v-if="friendIndex" class="ml-3">{{ friendLists.data[friendIndex].name }}</span>
+            </div>
+            <div class="mr-5 relative">
+                <button @click="menuFun()" class="text-lg"><i class="fa-solid fa-ellipsis"></i></button>
+                <div v-if="dropDownToggle" class="z-30 bg-gray-700 shadow-md px-4 absolute top-8 rounded-lg right-0 mt-2 w-48 flex flex-col">
+                    <span class="mt-2 py-2">testing one</span>
+                    <span class="py-2">testing two</span>
+                    <span class="mb-2 py-2">testign three</span>
+                </div>
+                <div v-if="dropDownToggle" class="fixed inset-0 z-20" @click="menuFun()"></div>
+            </div>
+        </div>
+        <div v-if="tempMessages.data.length > 0" class="basis-[86%] flex flex-col-reverse overflow-y-scroll">
             <div v-for="(message, index) in tempMessages.data" :key="index">
                 <div class="text-center" v-if="tempMessages.data.length-1 === index">
                     <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ message.created_at[0] }}</span>
@@ -98,7 +118,7 @@ const { stop } = useIntersectionObserver(
                 <div v-else class="my-5">You've caught up on all messages.....</div>
             </div>
         </div>
-        <div v-else class="basis-[93%] flex justify-center items-start">
+        <div v-else class="basis-[86%] flex justify-center items-start">
             <div class="p-3 px-7 mt-10 rounded-xl bg-gray-700 font-semibold">There's no message yet! Start messaging...</div>
         </div>
 

@@ -1,18 +1,14 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SaveMessageController;
 use App\Http\Controllers\TestingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect("login");
 });
 
 Route::middleware(['auth','verified'])->group(function () {
@@ -53,8 +49,12 @@ Route::middleware('auth')->group(function () {
     Route::post('send/message/{friend_id}',[TestingController::class, 'sendMessage']);
     //read message
     Route::get("message/read/{id}", [TestingController::class, 'readMessage']);
+    //create save meesage
+    Route::post('save-message', [SaveMessageController::class, 'create']);
+    //get save messages
+    Route::get("save-messages", [SaveMessageController::class, 'saveMessages']);
 });
 
-Route::get("/controller/testing/{id}", [TestingController::class, "controllerTesting"]);
+Route::get("/controller/testing", [TestingController::class, "controllerTesting"]);
 
 require __DIR__.'/auth.php';
