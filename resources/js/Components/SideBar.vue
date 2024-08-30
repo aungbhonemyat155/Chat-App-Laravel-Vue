@@ -62,7 +62,7 @@ const { stop } = useIntersectionObserver(
 
 <template>
     <section >
-        <div class="flex items-center p-1 hover:bg-gray-800" @click="store.saveMessageToggle()">
+        <div class="flex items-center p-1 hover:bg-gray-800" @click="store.saveMessageToggle()" :class="{'bg-gray-700' : friendIndex == 'save-message'}">
             <img src="/storage/inbox.svg" alt="" class="rounded-full mr-5" style="width: 50px; height: 50px; object-fit: cover;">
             <div>
                 <span class="font-bold">Save Messages</span>

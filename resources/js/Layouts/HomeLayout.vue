@@ -69,7 +69,7 @@ onMounted(() => {
 <template>
     <main class="grid grid-cols-12 relative text-slate-300">
         <!-- side bar  -->
-        <div id="friendList" class="col-span-12 md:col-span-5 lg:col-span-4 2xl:col-span-3 bg-gray-900 flex flex-col h-screen" :class="{'hidden' : settingToggle, 'hidden md:flex md:flex-col' : contentBox || loadingScreen}">
+        <div id="friendList" class="col-span-12 md:col-span-5 lg:col-span-4 2xl:col-span-3 bg-gray-900 flex flex-col h-screen" :class="{'hidden' : settingToggle, 'hidden md:flex md:flex-col' : contentBox || loadingScreen || saveMessage}">
             <!-- nav-bar and search box  -->
             <div class="bg-gray-900 py-3 px-5 flex justify-center basis-[7%]">
                 <SettingButton></SettingButton>
