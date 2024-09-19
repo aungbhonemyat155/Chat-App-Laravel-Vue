@@ -20,14 +20,16 @@ class MessageSeeder extends Seeder
                     'from_user_id' => 1,
                     'to_user_id' => 2,
                     'message' => fake()->sentence(10),
-                    'created_at' => Carbon::now()
+                    'created_at' => Carbon::now(),
+                    'friend_lists_id' => 1
                 ]);
             }else{
                 DB::table('messages')->insert([
                     'from_user_id' => 2,
                     'to_user_id' => 1,
                     'message' => fake()->sentence(10),
-                    'created_at' => Carbon::now()
+                    'created_at' => Carbon::now(),
+                    'friend_lists_id' => 1
                 ]);
             }
         }

@@ -171,9 +171,9 @@ const menuFun = () => {
                 <div class="text-center" v-if="tempMessages.data.length-1 === index">
                     <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ message.created_at[0] }}</span>
                 </div>
-                <div class="flex my-2 mx-1" :class="{'flex-row-reverse' : userData.user.id === message.from_user_id}">
+                <div v-if="(message.from_user_id == userData.user.id && !message.from_user_delete) || (message.to_user_id == userData.user.id && !message.to_user_delete)" class="flex my-2 mx-1" :class="{'flex-row-reverse' : userData.user.id === message.from_user_id}">
                     <div @click.right.prevent="messageMenuFun(index)" class="w-max max-w-lg rounded-lg px-3 p-2 pb-1" :class="{'bg-blue-800' : userData.user.id === message.from_user_id, 'bg-gray-800' : userData.user.id !== message.from_user_id}">
-                        {{ message.message }}
+                        {{ message.message }}, {{ message.from_user_delete }}
                         <div class="text-xs text-end text-gray-500">{{ message.created_at[1] }}</div>
                     </div>
                     <div @click="messageMenuFun(index)" class="cursor-pointer mx-2 bg-gray-700 p-1 h-min self-center rounded-full text-xs"><i class="fa-solid fa-share"></i></div>

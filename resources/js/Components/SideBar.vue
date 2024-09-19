@@ -42,8 +42,8 @@ const { stop } = useIntersectionObserver(
             if(friendLists.value.next_page_url){
                 axios.get(`/friends/lists?page=${friendLists.value.current_page+1}`).then(response => {
                     response.data.data.map(item => {
-                        if(item.last_message){
-                            item.last_message = JSON.parse(item.last_message)
+                        if(item.latest_message){
+                            item.latest_message = JSON.parse(item.latest_message)
                         }
                         return item;
                     })
@@ -73,7 +73,7 @@ const { stop } = useIntersectionObserver(
                 <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class=" rounded-full col-span-2 2xl:col-span-3" style="width: 50px; height: 50px; object-fit: cover;">
                 <div class="flex flex-col mt-1 col-span-9 2xl:col-span-8">
                     <span class="text-white font-bold">{{ item.name }}</span>
-                    <span v-if="item.last_message" class="text-slate-500 text-sm">{{ truncateMessage(item.last_message.message) }}</span>
+                    <span v-if="item.latest_message" class="text-slate-500 text-sm">{{ truncateMessage(item.latest_message.message) }}</span>
                 </div>
                 <div v-if="messageNoti[`${item.friend_id}`]" class="bg-blue-700 rounded-full w-min h-min p-1 px-3 self-center col-span-1 text-center text-xs font-bold">{{ messageNoti[`${item.friend_id}`].length }}</div>
             </div>

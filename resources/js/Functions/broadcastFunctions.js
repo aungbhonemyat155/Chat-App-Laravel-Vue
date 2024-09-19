@@ -20,7 +20,7 @@ class BroadCast{
             friend_list_id : item.data.id,
             is_approve : false,
             is_delete : false,
-            last_message : null,
+            latest_message : null,
             friend_id : item.data.senderData.id,
             name : item.data.senderData.name,
             profile_photo : item.data.senderData.profile_photo
@@ -117,7 +117,7 @@ class BroadCast{
 
         if(index != -1){
             removedValue = temp.data.splice(index, 1)[0];
-            removedValue.last_message = item.message;
+            removedValue.latest_message = item.message;
 
             if(this.friendIndex.value < index) this.friendIndex.value = this.friendIndex.value + 1
 
@@ -148,7 +148,7 @@ class BroadCast{
                 friend_list_id : item.data.id
             }
 
-            removedValue.last_message = JSON.parse(removedValue.last_message)
+            removedValue.latest_message = JSON.parse(removedValue.latest_message)
 
             if(this.friendIndex.value)this.friendIndex.value = this.friendIndex.value + 1
 

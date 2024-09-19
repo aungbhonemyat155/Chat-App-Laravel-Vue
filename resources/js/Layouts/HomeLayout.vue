@@ -14,6 +14,7 @@ import { useMainStore } from '../stores/MainStore'
 import { storeToRefs } from 'pinia'
 import LoadingScreen from "@/Components/LoadingScreen.vue";
 import BroadCast from "@/Functions/broadcastFunctions";
+import BroadcastMessage from "@/Functions/broadcastMessage";
 
 const store = useMainStore()
 const { settingToggle, searchFriToggle, notiToggle, emptyBox, editToggle, userData, friendListToggle, contentBox, loadingScreen, saveMessage } = storeToRefs(store)
@@ -23,6 +24,7 @@ const searchResult = ref("");
 onMounted(() => {
 
     const broadcast = new BroadCast(store)
+    const messageBroadcast = new BroadcastMessage(store)
 
     Echo.private('App.Models.User.'+ userData.value.user.id)
     .notification((item) => {
@@ -31,7 +33,8 @@ onMounted(() => {
 
         switch(item.type) {
             case "broadcast.sendMessage": {
-                broadcast.sendMessage(item)
+                messageBroadcast.checkFriendLists(item.data.senderData)
+
                 break;
             }
             case "broadcast.friendRequest": {
