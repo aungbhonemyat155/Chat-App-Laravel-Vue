@@ -1,7 +1,5 @@
 import axios from "axios";
 import { defineStore } from "pinia";
-import MessageFormatter from "@/Functions/messageFormatter";
-import AddButton from "@/Functions/addButton"
 import { ref } from "vue";
 
 export const useMainStore = defineStore( 'mainStore', () => {
@@ -117,9 +115,6 @@ export const useMainStore = defineStore( 'mainStore', () => {
         if(!friendLists.value.data[index].messages){
             loadingScreen.value = true
             axios.get('messages/'+id).then(response => {
-                let formatter = new MessageFormatter(response.data.data)
-                response.data.data = formatter.changeMessageDate()
-
                 friendLists.value.data[index].messages = response.data
                 tempMessages.value = response.data
 
@@ -163,12 +158,6 @@ export const useMainStore = defineStore( 'mainStore', () => {
         loadingScreen.value = true
 
         axios.get('save-messages').then(response => {
-
-            let formatter = new MessageFormatter(response.data.data);
-            response.data.data = formatter.changeMessageDate();
-
-            response.data.data = AddButton.add(response.data.data)
-
             tempMessages.value = response.data;
             saveMessage.value = true
 

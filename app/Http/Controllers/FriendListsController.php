@@ -149,13 +149,19 @@ class FriendListsController extends Controller
         $friendData = FriendLists::join('users', function ($join) use ($user) {
             $join->on(function ($query) use ($user) {
                 $query->on('friend_lists.first_user_id', '=', 'users.id')
-                    ->where('friend_lists.second_user_id', $user);
+                      ->where('friend_lists.second_user_id', $user);
             })
             ->orOn(function ($query) use ($user) {
                 $query->on('friend_lists.second_user_id', '=', 'users.id')
-                    ->where('friend_lists.first_user_id', $user);
+                      ->where('friend_lists.first_user_id', $user);
             });
         })
+        ->leftJoin(DB::raw("(SELECT * FROM messages WHERE id IN (
+            SELECT MAX(id) FROM messages
+            WHERE (from_user_id = $user AND from_user_delete = false)
+            OR (to_user_id = $user AND to_user_delete = false)
+            GROUP BY friend_lists_id)
+        ) as latest_messages"), 'friend_lists.id', '=', 'latest_messages.friend_lists_id')
         ->select(
             'users.id as friend_id',
             'users.name',
@@ -166,9 +172,14 @@ class FriendListsController extends Controller
             'friend_lists.second_user_id',
             'friend_lists.is_approve',
             'friend_lists.is_delete',
-            'friend_lists.updated_at'
+            'friend_lists.updated_at',
+            'latest_messages.id as latest_message_id',
+            'latest_messages.from_user_id as latest_message_from_user_id',
+            'latest_messages.to_user_id as latest_message_to_user_id',
+            'latest_messages.message as latest_message_text',
+            'latest_messages.created_at as latest_message_created_at'
         )
-        ->orderBy('friend_lists.updated_at', 'desc')
+        ->orderByRaw('COALESCE(latest_message_created_at, friend_lists.updated_at) DESC')
         ->paginate(10);
 
         return response()->json($friendData, 200);

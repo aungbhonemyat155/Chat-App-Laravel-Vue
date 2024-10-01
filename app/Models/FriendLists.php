@@ -17,6 +17,16 @@ class FriendLists extends Model
         return $this->hasMany(Messages::class, 'friend_lists_id');
     }
 
+    public function firstUser()
+    {
+        return $this->belongsTo(User::class, 'first_user_id');
+    }
+
+    public function secondUser()
+    {
+        return $this->belongsTo(User::class, 'second_user_id');
+    }
+
     public function latestMessage()
     {
         return $this->hasOne(Messages::class, 'friend_lists_id')->latestOfMany();

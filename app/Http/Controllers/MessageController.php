@@ -34,7 +34,7 @@ class MessageController extends Controller
             'from_user_id' => $user->id,
             'to_user_id' => $friend_id,
             'message' => $request->message,
-            'friend_list_id' => $request->friend_list_id
+            'friend_lists_id' => $request->friend_list_id
         ]);
 
         $friendList = FriendLists::where("id", $request->friend_list_id)->first();
@@ -56,5 +56,29 @@ class MessageController extends Controller
             ->where('type', 'Message')
             ->whereJsonContains('data->from_user_id', intval($id))
             ->delete();
+    }
+
+    //delete message for you
+    public function deleteMessageForYou($userId, $messageId){
+        $message = Messages::find($messageId);
+
+        $message->update([
+            'from_user_delete' => $message->from_user_id == $userId,
+            'to_user_delete' => $message->to_user_id == $userId,
+        ]);
+
+        return response()->json([
+            "message" => "this is delete message for you",
+            "data" => $message
+        ], 200);
+    }
+
+    //delete message for everyone
+    public function deleteMessageForEveryone($messageId){
+        Messages::destroy($messageId);
+
+        return response()->json([
+            "message" => "this is delete message for everyone"
+        ], 200);
     }
 }

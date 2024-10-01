@@ -1,16 +1,17 @@
 <script setup>
 import { useMainStore } from "@/stores/MainStore";
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from "pinia";
 import { useIntersectionObserver } from '@vueuse/core'
 import TimeFormatter from "@/Functions/dateTimeFormatter"
 import TextInput from "@/Components/TextInput.vue"
 import axios from "axios";
-import MessageFormatter from "@/Functions/messageFormatter";
 
 const store = useMainStore()
 
 const { friendLists, friendIndex, userData, tempMessages } = storeToRefs(store)
+
+const friendId = ref(friendLists.value.data[friendIndex.value].friend_id);
 
 const messageBox = ref("")
 
@@ -19,24 +20,46 @@ const target = ref(null)
 const dropDownToggle = ref(false)
 
 const forwardModal = ref(false)
-const forwardMessage = ref(null)
 const friendListTarget = ref(null)
+
+const messageSettingModal = ref(false)
+const messageModalX = ref(null)
+const messageModalY = ref(null)
+
+const modalMessageId = ref(null)
+const modalMessageText = ref(null)
+
+const messageModal = ref(null)
+
+const popUpModalToggle = ref(false)
+const popUpModalText = ref(null)
+
+const changeDateFormat = (dateData) => {
+    const formatter = new TimeFormatter(dateData);
+    return formatter.getTime();
+}
 
 const sendFun = () => {
     let trimmedStr = messageBox.value.trim()
     messageBox.value = ""
     if(trimmedStr){
-        axios.post(`send/message/${friendLists.value.data[friendIndex.value].friend_id}`,{
+        axios.post(`send/message/${friendId.value}`,{
             'message' : trimmedStr,
-            'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
+            'friend_list_id' : tempMessages.value.data[0].friend_lists_id}
         ).then(response => {
-            let formatter = new TimeFormatter(response.data.message.created_at)
-            response.data.message.created_at = formatter.getTime()
 
+            //push the message to tempMessage
             let temp = [ response.data.message, ...tempMessages.value.data ]
             store.pushMessage(temp)
 
-            friendLists.value.data[friendIndex.value].last_message = response.data.message
+            //assign latest message's info
+            let friendData = friendLists.value.data[friendIndex.value];
+            friendData.latest_message_created_at = response.data.message.created_at;
+            friendData.latest_message_from_user_id = response.data.message.from_user_id;
+            friendData.latest_message_id = response.data.message.id;
+            friendData.latest_message_text = response.data.message.message;
+            friendData.latest_message_to_user_id = response.data.message.to_user_id;
+
             if(friendIndex.value != 0){
                 let removedValue = friendLists.value.data.splice(friendIndex.value, 1)[0];
                 friendLists.value.data.unshift(removedValue)
@@ -48,28 +71,76 @@ const sendFun = () => {
     }
 }
 
-const messageMenuFun = (index) => {
-    tempMessages.value.data[index].button = true
+const messageMenuFun = (event) => {
+    if (event.target.classList.contains('messageContainer') || event.target.classList.contains('dateContainer')) {
+        if(event.target.classList.contains('dateContainer')){
+            modalMessageId.value = event.target.parentNode.id
+            modalMessageText.value = event.target.parentNode.childNodes[0].nodeValue.trim();
+        }else{
+            modalMessageId.value = event.target.id;
+            modalMessageText.value = event.target.childNodes[0].nodeValue.trim();
+        }
+
+        //information of scrollable element
+        const sectionElement = document.getElementById("messageBlock");
+        const rect = sectionElement.getBoundingClientRect();
+        const sectionX = rect.left + window.scrollX; // X coordinate of scrollable element
+        const sectionY = rect.top + window.scrollY;  // Y coordinate of scrollable element
+        const sectionWidth = sectionElement.offsetWidth; //widht of scrollable element
+        const sectionHeight = sectionElement.offsetHeight; //height of scrollable element
+
+        //information of modal element
+        messageModal.value.classList.remove('hidden');
+        const modalWidth = messageModal.value.offsetWidth;
+        const modalHeight = messageModal.value.offsetHeight;
+
+        //calculate and assign the x and y value of where modal should appear
+        if(sectionHeight + sectionY < event.clientY + modalHeight){
+            messageModalY.value = event.clientY - modalHeight;
+        }else{
+            messageModalY.value = event.clientY;
+        }
+
+        if(sectionX + sectionWidth < event.clientX + modalWidth){
+            messageModalX.value = event.clientX - sectionX - modalWidth;
+        }else{
+            messageModalX.value = event.clientX - sectionX;
+        }
+
+        messageSettingModal.value = true
+    }
 }
 
-const messageForwardToggle = (message) => {
+const messageForwardToggle = () => {
     forwardModal.value = true
-    forwardMessage.value = message
+    messageSettingModal.value = false;
 }
 
 const messageForward = (id, friend_list_id, index) => {
     axios.post(`send/message/${id}`,{
-        'message' : forwardMessage.value,
+        'message' : modalMessageText.value,
         'friend_list_id' : friend_list_id}
     ).then(response => {
-        let formatter = new TimeFormatter(response.data.message.created_at)
-        response.data.message.created_at = formatter.getTime()
+        forwardModal.value = false
+        //pop up notification about forward success
+        popUpModalText.value = 'Message Forwarded'
+        popUpModalToggle.value = true
+        setTimeout(() => {
+            popUpModalToggle.value = false;
+        }, 1100);
 
         if(friendLists.value.data[index].messages){
             friendLists.value.data[index].messages.data.unshift(response.data.message)
         }
 
-        friendLists.value.data[index].last_message = response.data.message
+        //assign latest message's info
+        let friendData = friendLists.value.data[index];
+        friendData.latest_message_created_at = response.data.message.created_at;
+        friendData.latest_message_from_user_id = response.data.message.from_user_id;
+        friendData.latest_message_id = response.data.message.id;
+        friendData.latest_message_text = response.data.message.message;
+        friendData.latest_message_to_user_id = response.data.message.to_user_id;
+
         if(index != 0){
             let removedValue = friendLists.value.data.splice(index, 1)[0];
             friendLists.value.data.unshift(removedValue)
@@ -80,13 +151,75 @@ const messageForward = (id, friend_list_id, index) => {
     })
 }
 
-const forwardSaveMessage = (message, index) => {
-    friendLists.value.data[friendIndex.value].messages.data[index].button = false
-    friendLists.value.data[index].button = false
+const forwardSaveMessage = () => {
     axios.post('save-message',{
-        'message': message
+        'message': modalMessageText.value
     }).then(response => {
+        messageSettingModal.value = false
 
+        popUpModalText.value = 'Message Forwarded to SaveMessages'
+        popUpModalToggle.value = true
+        setTimeout(() => {
+            popUpModalToggle.value = false;
+        }, 1100);
+    }).catch(error => {
+        console.log(error);
+    })
+}
+
+const messageDeleteForYou = () => {
+    axios.get(`message/delete/${userData.value.user.id}/${modalMessageId.value}`).then(response => {
+        let updatedMessages = tempMessages.value.data.map(item => {
+            if(item.id == response.data.data.id){
+                item = response.data.data;
+            }
+
+            return item;
+        })
+        //updated messages to tempMessages
+        store.pushMessage(updatedMessages)
+        //updated messages to friendLists.data[index].messages.data
+        friendLists.value.data[friendIndex.value].messages.data = updatedMessages;
+
+        //update the latest message
+        tempMessages.value.data.every((element, index) => {
+            if(element.from_user_id == userData.value.user.id && !element.from_user_delete){
+                friendLists.value.data[friendIndex.value].latest_message_created_at = element.created_at;
+                friendLists.value.data[friendIndex.value].latest_message_from_user_id = element.from_user_id;
+                friendLists.value.data[friendIndex.value].latest_message_id = element.id;
+                friendLists.value.data[friendIndex.value].latest_message_text = element.message;
+                friendLists.value.data[friendIndex.value].latest_message_to_user_id = element.to_user_id;
+            }
+        })
+
+        //sort the friendLists array
+        const sortedArray = arraySort(friendLists.value.data);
+        friendLists.value.data = sortedArray;
+
+    }).catch(error => {
+        console.log(error);
+    })
+}
+
+const arraySort = (data) => {
+    data.sort((a, b) => {
+      if (a.latest_message_created_at && b.latest_message_created_at) {
+        return b.latest_message_created_at.localeCompare(a.latest_message_created_at);
+      } else if (a.latest_message_created_at) {
+        return -1;
+      } else if (b.latest_message_created_at) {
+        return 1;
+      } else {
+        return b.updated_at.localeCompare(a.updated_at);
+      }
+    });
+
+    return data;
+}
+
+const messageDeleteForEveryone = () => {
+    axios.get(`message/delete/${modalMessageId.value}`).then(response => {
+        console.log(response.data.message);
     }).catch(error => {
         console.log(error);
     })
@@ -97,9 +230,6 @@ const { stop } = useIntersectionObserver(
     ([{ isIntersecting }], observerElement) => {
         if(isIntersecting && tempMessages.value.next_page_url){
             axios.get(`messages/${friendLists.value.data[friendIndex.value].friend_id}?page=${tempMessages.value.current_page+1}`).then(response => {
-                let formatter = new MessageFormatter(response.data.data)
-                response.data.data = formatter.changeMessageDate()
-
                 let temp = [...tempMessages.value.data, ...response.data.data]
 
                 response.data.data = temp
@@ -166,35 +296,48 @@ const menuFun = () => {
                 <div v-if="dropDownToggle" class="fixed inset-0 z-10" @click="menuFun()"></div>
             </div>
         </div>
-        <div v-if="tempMessages.data.length > 0" class="basis-[86%] flex flex-col-reverse overflow-y-scroll">
+        <div @click.right.prevent="messageMenuFun($event)" v-if="tempMessages.data.length > 0" class="basis-[86%] flex flex-col-reverse overflow-y-scroll" id="messageBlock">
             <div v-for="(message, index) in tempMessages.data" :key="index">
                 <div class="text-center" v-if="tempMessages.data.length-1 === index">
-                    <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ message.created_at[0] }}</span>
+                    <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ changeDateFormat(message.created_at)[0] }}</span>
                 </div>
                 <div v-if="(message.from_user_id == userData.user.id && !message.from_user_delete) || (message.to_user_id == userData.user.id && !message.to_user_delete)" class="flex my-2 mx-1" :class="{'flex-row-reverse' : userData.user.id === message.from_user_id}">
-                    <div @click.right.prevent="messageMenuFun(index)" class="w-max max-w-lg rounded-lg px-3 p-2 pb-1" :class="{'bg-blue-800' : userData.user.id === message.from_user_id, 'bg-gray-800' : userData.user.id !== message.from_user_id}">
-                        {{ message.message }}, {{ message.from_user_delete }}
-                        <div class="text-xs text-end text-gray-500">{{ message.created_at[1] }}</div>
+                    <div :id="message.id"
+                    class="w-max max-w-lg rounded-lg px-3 p-2 pb-1 messageContainer"
+                    :class="{'bg-blue-800' : userData.user.id === message.from_user_id,
+                    'bg-gray-800' : userData.user.id !== message.from_user_id}">
+                        {{ message.message }}
+                        <div class="text-xs text-end text-gray-500 dateContainer">{{ changeDateFormat(message.created_at)[1] }}</div>
                     </div>
-                    <div @click="messageMenuFun(index)" class="cursor-pointer mx-2 bg-gray-700 p-1 h-min self-center rounded-full text-xs"><i class="fa-solid fa-share"></i></div>
-                    <div class="z-20 min-w-36 mr-3 relative">
-                        <div v-if="message.button" class="absolute w-full bg-gray-700 p-2 px-3 rounded-xl right-0 bottom-0">
-                            <div class=" pt-1 py-2 border-b border-b-gray-600 cursor-pointer text-red-400">delete</div>
-                            <div class=" py-2 border-b border-b-gray-600 cursor-pointer" @click="messageForwardToggle(message.message)">forward</div>
-                            <div class="pt-2 pb-1 cursor-pointer" @click="forwardSaveMessage(message.message, index)">save-messages</div>
-                        </div>
-                    </div>
-                    <div v-if="message.button" class="fixed inset-0 z-10" @click="message.button = false"></div>
+
                 </div>
 
-                <div class="text-center" v-if="tempMessages.data[index-1] && tempMessages.data[index-1].created_at[0] !== message.created_at[0]">
-                    <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ tempMessages.data[index-1].created_at[0] }}</span>
+                <div class="text-center" v-if="tempMessages.data[index-1] && changeDateFormat(tempMessages.data[index-1].created_at)[0] !== changeDateFormat(message.created_at)[0]">
+                    <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ changeDateFormat(tempMessages.data[index-1].created_at)[0] }}</span>
                 </div>
             </div>
+
+            <!-- message setting modal  -->
+            <div ref="messageModal" :class="{'hidden' : !messageSettingModal}" class="w-min absolute h-min bg-gray-700 p-2 px-3 rounded-xl shadow" id="modalBlock" :style="{ top: `${messageModalY}px`, left: `${messageModalX}px`, zIndex: 1000}">
+                <div class=" pt-1 py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForYou">delete for you</div>
+                <div class="w-max py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForEveryone">delete for everyone</div>
+                <div class=" py-2 border-b border-b-gray-600 cursor-pointer" @click="messageForwardToggle()">forward</div>
+                <div class="pt-2 pb-1 cursor-pointer" @click="forwardSaveMessage()">save-messages</div>
+            </div>
+
+            <div v-if="messageSettingModal" @click.right.stop.prevent="messageSettingModal = false" class="fixed inset-0 z-10" @click="messageSettingModal = false"></div>
+            <!-- message setting modal  -->
+
             <div ref="target" class="text-center">
                 <div v-if="tempMessages.next_page_url" class="lds-dual-ring"></div>
                 <div v-else class="my-5">You've caught up on all messages.....</div>
             </div>
+
+            <!-- pop up modal  -->
+            <div v-if="popUpModalToggle" class="absolute inset-0 flex justify-center items-center">
+                <div class="bg-black px-5 bg-opacity-50 p-2 rounded-xl">{{ popUpModalText }}</div>
+            </div>
+            <!-- pop up modal  -->
         </div>
 
         <div v-else class="basis-[86%] flex justify-center items-start">

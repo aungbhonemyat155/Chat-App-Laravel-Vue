@@ -56,6 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::post('save-message', [SaveMessageController::class, 'create']);
     //get save messages
     Route::get("save-messages", [SaveMessageController::class, 'saveMessages']);
+    //delete message for you
+    Route::get("message/delete/{userId}/{messageId}", [MessageController::class, "deleteMessageForYou"]);
+    //delet message for everyone
+    Route::get("message/delete/{messageId}", [MessageController::class, "deleteMessageForEveryone"]);
 });
 
 Route::get("/controller/testing/{user}", [TestingController::class, "controllerTesting"]);

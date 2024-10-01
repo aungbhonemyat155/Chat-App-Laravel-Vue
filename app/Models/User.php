@@ -3,9 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\FriendLists;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
@@ -47,5 +48,22 @@ class User extends Authenticatable
         ];
     }
 
+    public function friendsAsFirstUser()
+    {
+        return $this->hasMany(FriendLists::class, 'first_user_id');
+    }
+
+    public function friendsAsSecondUser()
+    {
+        return $this->hasMany(FriendLists::class, 'second_user_id');
+    }
+
+    public function allFriends()
+    {
+        return FriendLists::where('first_user_id', $this->id)
+            ->orWhere('second_user_id', $this->id)
+            ->with(['firstUser', 'secondUser'])
+            ->get();
+    }
 
 }
