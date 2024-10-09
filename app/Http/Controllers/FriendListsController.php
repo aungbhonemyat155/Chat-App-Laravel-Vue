@@ -177,7 +177,7 @@ class FriendListsController extends Controller
             'latest_messages.from_user_id as latest_message_from_user_id',
             'latest_messages.to_user_id as latest_message_to_user_id',
             'latest_messages.message as latest_message_text',
-            'latest_messages.created_at as latest_message_created_at'
+            DB::raw("DATE_FORMAT(latest_messages.created_at, '%Y-%m-%dT%H:%i:%s.000000Z') as latest_message_created_at")
         )
         ->orderByRaw('COALESCE(latest_message_created_at, friend_lists.updated_at) DESC')
         ->paginate(10);

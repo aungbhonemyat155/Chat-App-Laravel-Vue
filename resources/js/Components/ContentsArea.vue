@@ -6,6 +6,7 @@ import { useIntersectionObserver } from '@vueuse/core'
 import TimeFormatter from "@/Functions/dateTimeFormatter"
 import TextInput from "@/Components/TextInput.vue"
 import axios from "axios";
+import { ssrImportMetaKey } from "vite/runtime";
 
 const store = useMainStore()
 
@@ -28,6 +29,7 @@ const messageModalY = ref(null)
 
 const modalMessageId = ref(null)
 const modalMessageText = ref(null)
+const modalFromUser = ref(null)
 
 const messageModal = ref(null)
 
@@ -45,8 +47,10 @@ const sendFun = () => {
     if(trimmedStr){
         axios.post(`send/message/${friendId.value}`,{
             'message' : trimmedStr,
-            'friend_list_id' : tempMessages.value.data[0].friend_lists_id}
+            'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
         ).then(response => {
+            //update the updated_at of friendLists
+            friendLists.value.data[friendIndex.value].updated_at = response.data.friend_list.updated_at;
 
             //push the message to tempMessage
             let temp = [ response.data.message, ...tempMessages.value.data ]
@@ -76,9 +80,11 @@ const messageMenuFun = (event) => {
         if(event.target.classList.contains('dateContainer')){
             modalMessageId.value = event.target.parentNode.id
             modalMessageText.value = event.target.parentNode.childNodes[0].nodeValue.trim();
+            modalFromUser.value = event.target.parentNode.getAttribute('data-from-user-id');
         }else{
             modalMessageId.value = event.target.id;
             modalMessageText.value = event.target.childNodes[0].nodeValue.trim();
+            modalFromUser.value = event.target.getAttribute('data-from-user-id');
         }
 
         //information of scrollable element
@@ -178,23 +184,38 @@ const messageDeleteForYou = () => {
         })
         //updated messages to tempMessages
         store.pushMessage(updatedMessages)
-        //updated messages to friendLists.data[index].messages.data
-        friendLists.value.data[friendIndex.value].messages.data = updatedMessages;
 
-        //update the latest message
-        tempMessages.value.data.every((element, index) => {
-            if(element.from_user_id == userData.value.user.id && !element.from_user_delete){
-                friendLists.value.data[friendIndex.value].latest_message_created_at = element.created_at;
-                friendLists.value.data[friendIndex.value].latest_message_from_user_id = element.from_user_id;
-                friendLists.value.data[friendIndex.value].latest_message_id = element.id;
-                friendLists.value.data[friendIndex.value].latest_message_text = element.message;
-                friendLists.value.data[friendIndex.value].latest_message_to_user_id = element.to_user_id;
+        if(modalMessageId.value == friendLists.value.data[friendIndex.value].latest_message_id){
+            //update the latest message
+            tempMessages.value.data.every((element, index) => {
+                if((element.from_user_id == userData.value.user.id && !element.from_user_delete) || (element.to_user_id == userData.value.user.id && !element.to_user_delete)){
+                    friendLists.value.data[friendIndex.value].latest_message_created_at = element.created_at;
+                    friendLists.value.data[friendIndex.value].latest_message_from_user_id = element.from_user_id;
+                    friendLists.value.data[friendIndex.value].latest_message_id = element.id;
+                    friendLists.value.data[friendIndex.value].latest_message_text = element.message;
+                    friendLists.value.data[friendIndex.value].latest_message_to_user_id = element.to_user_id;
+
+                    return false;
+                }
+
+                return true;
+            })
+
+            //sort the friendLists array
+            const sortedArray = arraySort(friendLists.value.data);
+            friendLists.value.data = sortedArray;
+
+            //update the friend Index value
+            for (let i = 0; i < sortedArray.length; i++) {
+                if(sortedArray[i].friend_list_id == response.data.data.friend_lists_id){
+                    friendIndex.value = i;
+                    break;
+                }
             }
-        })
+        }
 
-        //sort the friendLists array
-        const sortedArray = arraySort(friendLists.value.data);
-        friendLists.value.data = sortedArray;
+        //closing the message menu model
+        messageSettingModal.value = false
 
     }).catch(error => {
         console.log(error);
@@ -203,23 +224,60 @@ const messageDeleteForYou = () => {
 
 const arraySort = (data) => {
     data.sort((a, b) => {
-      if (a.latest_message_created_at && b.latest_message_created_at) {
-        return b.latest_message_created_at.localeCompare(a.latest_message_created_at);
-      } else if (a.latest_message_created_at) {
-        return -1;
-      } else if (b.latest_message_created_at) {
-        return 1;
-      } else {
-        return b.updated_at.localeCompare(a.updated_at);
-      }
+        const dateA = a.latest_message_created_at ? new Date(a.latest_message_created_at) : new Date(a.updated_at);
+        const dateB = b.latest_message_created_at ? new Date(b.latest_message_created_at) : new Date(b.updated_at);
+
+        // Sort in descending order (most recent date first)
+        return dateB - dateA;
     });
 
     return data;
 }
 
+
 const messageDeleteForEveryone = () => {
     axios.get(`message/delete/${modalMessageId.value}`).then(response => {
-        console.log(response.data.message);
+        const friList = friendLists.value.data[friendIndex.value];
+
+        //update the temp message
+        let filteredMessage = tempMessages.value.data.filter(item => {
+            return item.id != modalMessageId.value
+        })
+        store.pushMessage(filteredMessage);
+
+        //checking latest message need to update?
+        if(modalMessageId.value == friList.latest_message_id){
+            //updating the latest message data
+            tempMessages.value.data.every((element, index) => {
+                if((element.from_user_id == userData.value.user.id && !element.from_user_delete) || (element.to_user_id == userData.value.user.id && !element.to_user_delete)){
+                    friList.latest_message_created_at = element.created_at;
+                    friList.latest_message_from_user_id = element.from_user_id;
+                    friList.latest_message_id = element.id;
+                    friList.latest_message_text = element.message;
+                    friList.latest_message_to_user_id = element.to_user_id;
+
+                    return false;
+                }
+
+                return true;
+            })
+
+            //sorting the friendLists
+            const sortedArray = arraySort(friendLists.value.data);
+            friendLists.value.data = sortedArray;
+
+            //correcting the frined index
+            for (let i = 0; i < sortedArray.length; i++) {
+                if(sortedArray[i].friend_list_id == response.data.friend_lists_id){
+                    friendIndex.value = i;
+                    break;
+                }
+            }
+        }
+
+        messageSettingModal.value = false;
+
+
     }).catch(error => {
         console.log(error);
     })
@@ -305,7 +363,8 @@ const menuFun = () => {
                     <div :id="message.id"
                     class="w-max max-w-lg rounded-lg px-3 p-2 pb-1 messageContainer"
                     :class="{'bg-blue-800' : userData.user.id === message.from_user_id,
-                    'bg-gray-800' : userData.user.id !== message.from_user_id}">
+                    'bg-gray-800' : userData.user.id !== message.from_user_id}"
+                    :data-from-user-id="message.from_user_id">
                         {{ message.message }}
                         <div class="text-xs text-end text-gray-500 dateContainer">{{ changeDateFormat(message.created_at)[1] }}</div>
                     </div>
@@ -319,10 +378,10 @@ const menuFun = () => {
 
             <!-- message setting modal  -->
             <div ref="messageModal" :class="{'hidden' : !messageSettingModal}" class="w-min absolute h-min bg-gray-700 p-2 px-3 rounded-xl shadow" id="modalBlock" :style="{ top: `${messageModalY}px`, left: `${messageModalX}px`, zIndex: 1000}">
-                <div class=" pt-1 py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForYou">delete for you</div>
-                <div class="w-max py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForEveryone">delete for everyone</div>
-                <div class=" py-2 border-b border-b-gray-600 cursor-pointer" @click="messageForwardToggle()">forward</div>
-                <div class="pt-2 pb-1 cursor-pointer" @click="forwardSaveMessage()">save-messages</div>
+                <div class="w-max pt-1 py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForYou">delete for you</div>
+                <div v-if="modalFromUser == userData.user.id" class="w-max py-2 border-b border-b-gray-600 cursor-pointer text-red-400" @click="messageDeleteForEveryone">delete for everyone</div>
+                <div class="w-max py-2 border-b border-b-gray-600 cursor-pointer" @click="messageForwardToggle()">forward</div>
+                <div class="w-max pt-2 pb-1 cursor-pointer" @click="forwardSaveMessage()">save-messages</div>
             </div>
 
             <div v-if="messageSettingModal" @click.right.stop.prevent="messageSettingModal = false" class="fixed inset-0 z-10" @click="messageSettingModal = false"></div>

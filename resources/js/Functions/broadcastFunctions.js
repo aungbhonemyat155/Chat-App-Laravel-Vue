@@ -167,6 +167,10 @@ class BroadCast{
         temp.data = [ removedValue, ...temp.data ]
         this.store.setFriendLists(temp)
     }
+
+    deleteMessage(item){
+        console.log(item);
+    }
 }
 
 export default BroadCast;

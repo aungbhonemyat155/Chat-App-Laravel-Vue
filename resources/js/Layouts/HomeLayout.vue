@@ -33,8 +33,13 @@ onMounted(() => {
 
         switch(item.type) {
             case "broadcast.sendMessage": {
-                messageBroadcast.checkFriendLists(item.data.senderData)
+                let data = {
+                    "data": item.data,
+                    "senderData": JSON.parse(item.senderData),
+                    "message": JSON.parse(item.message)
+                }
 
+                messageBroadcast.sendMessage(data)
                 break;
             }
             case "broadcast.friendRequest": {
@@ -56,6 +61,9 @@ onMounted(() => {
             case 'broadcast.deleteFriReq': {
                 broadcast.deleteFriReq(item)
                 break;
+            }
+            case 'broadcast.deleteMessage': {
+                broadcast.deleteMessage(item)
             }
             default: {
                 console.log(item);

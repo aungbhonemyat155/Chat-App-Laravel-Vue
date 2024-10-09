@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Messages;
 use App\Models\FriendLists;
+use App\Notifications\MessageDelete;
 use Illuminate\Http\Request;
 use App\Notifications\SendMessage;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
 
 class MessageController extends Controller
@@ -37,7 +39,8 @@ class MessageController extends Controller
             'friend_lists_id' => $request->friend_list_id
         ]);
 
-        $friendList = FriendLists::where("id", $request->friend_list_id)->first();
+        $friendList = FriendLists::find($request->friend_list_id);
+        $friendList->touch();
 
         $friend = User::find($friend_id);
         Notification::send($friend, new SendMessage($friendList, $message, $user));
@@ -75,10 +78,20 @@ class MessageController extends Controller
 
     //delete message for everyone
     public function deleteMessageForEveryone($messageId){
-        Messages::destroy($messageId);
+        $message = Messages::find($messageId);
+
+        $fromUserId = $message->from_user_id;
+        $friendListId = $message->friend_lists_id;
+        $messageData = $message->toArray();
+
+        $message->delete();
+
+        $user = User::find($fromUserId);
+        Notification::send($user, new MessageDelete($messageData));
 
         return response()->json([
-            "message" => "this is delete message for everyone"
+            "message" => "this is delete message for everyone",
+            "friend_lists_id" => $friendListId
         ], 200);
     }
 }

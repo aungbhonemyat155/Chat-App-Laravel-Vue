@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 import TextInput from '@/Components/TextInput.vue';
 import { ref } from "vue"
 import { useIntersectionObserver } from '@vueuse/core'
-import MessageFormatter from '@/Functions/messageFormatter';
 import TimeFormatter from '@/Functions/dateTimeFormatter';
 
 const store = useMainStore()
@@ -21,9 +20,6 @@ const sendFun = () => {
     if(trimmedStr){
         axios.post("save-message",{ message: trimmedStr}).then(response => {
 
-            let formatter = new TimeFormatter(response.data.created_at)
-            response.data.created_at = formatter.getTime()
-
             let temp = tempMessages.value
             temp.data = [ response.data, ...temp.data ];
 
@@ -32,6 +28,11 @@ const sendFun = () => {
             console.log(error);
         })
     }
+}
+
+const changeDateFormat = (dateData) => {
+    const formatter = new TimeFormatter(dateData);
+    return formatter.getTime();
 }
 
 const dropDownFun = () => {
@@ -47,9 +48,6 @@ const { stop } = useIntersectionObserver(
     ([{ isIntersecting }], observerElement) => {
         if(isIntersecting && tempMessages.value.next_page_url){
             axios.get('save-messages?page='+(tempMessages.value.current_page+1)).then(response => {
-
-                let formatter = new MessageFormatter(response.data.data)
-                response.data.data = formatter.changeMessageDate()
 
                 let temp = [...tempMessages.value.data, ...response.data.data]
 
@@ -91,7 +89,7 @@ const { stop } = useIntersectionObserver(
             <div v-if="tempMessages.data.length" class="basis-[86%] flex flex-col-reverse overflow-y-scroll">
                 <div v-for="(message,index) in tempMessages.data" :key="index">
                     <div class="text-center w-full" v-if="tempMessages.data.length-1 === index">
-                        <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ message.created_at[0] }}</span>
+                        <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ changeDateFormat(message.created_at)[0] }}</span>
                     </div>
                     <div class="flex my-2 mx-1 justify-end items-center">
                         <div class="z-30 w-32 mr-3 relative">
@@ -105,11 +103,11 @@ const { stop } = useIntersectionObserver(
                         <div @click="messageMenuFun(index)" class="cursor-pointer mr-2 bg-gray-700 p-1 rounded-full text-xs"><i class="fa-solid fa-share"></i></div>
                         <div @click.right.prevent="messageMenuFun(index)" class="max-w-lg rounded-lg px-3 p-2 pb-1 bg-gray-800">
                             {{ message.message }}
-                            <div class="text-xs text-end text-gray-500">{{ message.created_at[1] }}</div>
+                            <div class="text-xs text-end text-gray-500">{{ changeDateFormat(message.created_at)[1] }}</div>
                         </div>
                     </div>
-                    <div class="text-center" v-if="tempMessages.data[index-1] && tempMessages.data[index-1].created_at[0] !== message.created_at[0]">
-                        <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ tempMessages.data[index-1].created_at[0] }}</span>
+                    <div class="text-center" v-if="tempMessages.data[index-1] && changeDateFormat(tempMessages.data[index-1].created_at)[0] !== changeDateFormat(message.created_at)[0]">
+                        <span class="bg-gray-800 px-5 py-1 text-sm rounded-full">{{ changeDateFormat(tempMessages.data[index-1].created_at)[0] }}</span>
                     </div>
                 </div>
                 <div ref="target" class="text-center self-center">
