@@ -253,4 +253,37 @@ class FriendListsController extends Controller
             'notiId' => $notiId
         ], 200);
     }
+
+    //search friend with their name or email
+    public function search(Request $request){
+        $user = auth()->user()->id;
+
+        $friendData = FriendLists::join('users', function ($join) use ($user) {
+            $join->on(function ($query) use ($user) {
+                $query->on('friend_lists.first_user_id', '=', 'users.id')
+                      ->where('friend_lists.second_user_id', $user);
+            })
+            ->orOn(function ($query) use ($user) {
+                $query->on('friend_lists.second_user_id', '=', 'users.id')
+                      ->where('friend_lists.first_user_id', $user);
+            });
+        })->select(
+            'users.id as friend_id',
+            'users.name',
+            'users.email',
+            'users.profile_photo',
+            'friend_lists.id as friend_list_id',
+            'friend_lists.first_user_id',
+            'friend_lists.second_user_id',
+            'friend_lists.is_approve',
+            'friend_lists.is_delete'
+        )
+        ->where(function ($query) use ($request){
+            $query->where('users.name' , 'like', '%'.$request->query('key').'%')
+                ->orWhere('users.email', '=', $request->query('key'));
+        })->where("users.id", "!=", auth()->user()->id)
+        ->get();
+
+        return response()->json($friendData, 200);
+    }
 }

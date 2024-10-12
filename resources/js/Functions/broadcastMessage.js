@@ -99,8 +99,6 @@ class BroadcastMessage {
     sendMessage(data) {
         //search if the sender info include in friend list
         this.friendListsIndex = this.searchFriendLists(data.senderData)
-        console.log(this.friendListsIndex);
-
 
         //check if the sender data exist in the friendLists
         if(this.friendListsIndex != -1){
@@ -126,9 +124,11 @@ class BroadcastMessage {
 
                 //read message notification
                 this.readMessageNofication(data.message.from_user_id)
-            }else if(friLists.messages){
-                let tempData = [ data.message, ...friLists.messages.data ];
-                friLists.messages.data = tempData;
+            }else{
+                if(friLists.messages){
+                    let tempData = [ data.message, ...friLists.messages.data ];
+                    friLists.messages.data = tempData;
+                }
 
                 //adding message notification
                 this.addMessageNotification(data.message)
@@ -137,19 +137,23 @@ class BroadcastMessage {
             //update the latest message data
             this.updateLatestMessageData(data.message);
         }else{
-            console.log("this is inside -1 block");
+            var friLists = this.friendLists.value;
 
-            var friLists = this.friendLists.value.data;
             //assign friend data value to friend Lists
             let friendData = this.friendListBuilder(data);
-            friLists = [ friendData, ...friLists ];
-
-            this.store.setFriendLists(friLists);
+            friLists.data = [ friendData, ...friLists.data ];
+            friLists.data.pop();
 
             //update the friend index
             if(typeof this.friendIndex.value === 'number'){
                 this.friendIndex.value += 1;
             }
+
+            //adding message notification
+            this.addMessageNotification(data.message)
+
+            //assign new friend lists value to state value
+            this.store.setFriendLists(friLists);
         }
 
     }

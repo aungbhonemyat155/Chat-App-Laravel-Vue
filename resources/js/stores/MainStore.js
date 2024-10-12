@@ -14,7 +14,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
     const friendListToggle = ref(false)
     const friendLists = ref(null)
     const contentBox = ref(false)
-    const friendIndex = ref(null)
+    const friendIndex = ref(-1)
     const loadingScreen = ref(false)
     const tempMessages = ref(null)
     const messageNoti = ref(null)
@@ -72,6 +72,13 @@ export const useMainStore = defineStore( 'mainStore', () => {
     function homeFun() {
         settingToggle.value = false
         toggleOff()
+        if(friendIndex.value != -1){
+            if(friendIndex.value == "save-message"){
+                saveMessage.value = true;
+            }else{
+                contentBox.value = true;
+            }
+        }
     }
 
     function setUser(data) {
@@ -143,7 +150,7 @@ export const useMainStore = defineStore( 'mainStore', () => {
 
     function backHome(){
         toggleOff();
-        friendIndex.value = null
+        friendIndex.value = -1
     }
 
     function backToSetting(){

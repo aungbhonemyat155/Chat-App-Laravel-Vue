@@ -12,8 +12,6 @@ const store = useMainStore()
 
 const { friendLists, friendIndex, userData, tempMessages } = storeToRefs(store)
 
-const friendId = ref(friendLists.value.data[friendIndex.value].friend_id);
-
 const messageBox = ref("")
 
 const target = ref(null)
@@ -36,6 +34,8 @@ const messageModal = ref(null)
 const popUpModalToggle = ref(false)
 const popUpModalText = ref(null)
 
+const forwardFriendSearch = ref("")
+
 const changeDateFormat = (dateData) => {
     const formatter = new TimeFormatter(dateData);
     return formatter.getTime();
@@ -45,7 +45,7 @@ const sendFun = () => {
     let trimmedStr = messageBox.value.trim()
     messageBox.value = ""
     if(trimmedStr){
-        axios.post(`send/message/${friendId.value}`,{
+        axios.post(`send/message/${friendLists.value.data[friendIndex.value].friend_id}`,{
             'message' : trimmedStr,
             'friend_list_id' : friendLists.value.data[friendIndex.value].friend_list_id}
         ).then(response => {
@@ -283,6 +283,25 @@ const messageDeleteForEveryone = () => {
     })
 }
 
+const searchFriendToggle = ref(false);
+const searchedValue = ref(null);
+
+const searchFriend = () => {
+    forwardFriendSearch.value = forwardFriendSearch.value.trim();
+    if(forwardFriendSearch.value){
+        searchFriendToggle.value = true;
+        axios.get("/users",{
+            params: {
+                "key": forwardFriendSearch.value
+            }
+        }).then((response) => {
+            searchedValue.value = response.data
+        }).catch((error) => {
+            console.log(error);
+        })
+    }
+}
+
 const { stop } = useIntersectionObserver(
     target,
     ([{ isIntersecting }], observerElement) => {
@@ -410,17 +429,36 @@ const menuFun = () => {
 
         <!-- forward message modal  -->
         <div v-if="forwardModal" class="absolute bg-gray-800 bg-opacity-50 inset-0 flex justify-center items-center">
-            <div class="bg-gray-900 rounded-xl z-50 flex flex-col h-screen w-6/12 overflow-y-scroll p-5 py-3">
-                <div v-for="(item, index) in friendLists.data" :key="index" class="grid grid-cols-12 my-2 justify-center items-center">
-                    <div class="col-span-2 mx-auto">
-                        <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class=" rounded-full col-span-2 2xl:col-span-3" style="width: 40px; height: 40px; object-fit: cover;">
-                    </div>
-                    <div class="col-span-7 text-center">{{ item.name }}</div>
-                    <div class="col-span-3 text-center">
-                        <button @click="messageForward(item.friend_id, item.friend_list_id, index)" class="px-2 hover:bg-slate-700 py-2 rounded-lg bg-gray-800">Send</button>
-                    </div>
+            <div class="bg-gray-900 rounded-xl z-50 flex flex-col h-screen w-6/12 p-5 py-3">
+                <div class="bg-gray-800 mb-1 basis-[6%]">
+                    <form @submit.prevent="searchFriend">
+                        <TextInput v-model="forwardFriendSearch" class="w-full" placeholder="search your friend here..."></TextInput>
+                    </form>
                 </div>
-                <div ref="friendListTarget"></div>
+                <div v-if="!searchFriendToggle" class="basis-[94%] overflow-y-scroll">
+                    <div v-for="(item, index) in friendLists.data" :key="index" class="grid grid-cols-12 my-3 justify-center items-center">
+                        <div class="col-span-2 mx-auto">
+                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class=" rounded-full col-span-2 2xl:col-span-3" style="width: 40px; height: 40px; object-fit: cover;">
+                        </div>
+                        <div class="col-span-7 text-center">{{ item.name }}</div>
+                        <div class="col-span-3 text-center">
+                            <button @click="messageForward(item.friend_id, item.friend_list_id, index)" class="px-2 hover:bg-slate-700 py-2 rounded-lg bg-gray-800">Send</button>
+                        </div>
+                    </div>
+                    <div ref="friendListTarget"></div>
+                </div>
+                <div v-if="searchFriendToggle" class="basis-[94%] overflow-y-scroll">
+                    <div v-for="(item, index) in searchedValue" :key="index" class="grid grid-cols-12 my-3 justify-center items-center">
+                        <div class="col-span-2 mx-auto">
+                            <img :src="item.profile_photo ? '/storage/' + item.profile_photo : '/storage/user3.svg'" alt="" class=" rounded-full col-span-2 2xl:col-span-3" style="width: 40px; height: 40px; object-fit: cover;">
+                        </div>
+                        <div class="col-span-7 text-center">{{ item.name }}</div>
+                        <div class="col-span-3 text-center">
+                            <button @click="messageForward(item.friend_id, item.friend_list_id, index)" class="px-2 hover:bg-slate-700 py-2 rounded-lg bg-gray-800">Send</button>
+                        </div>
+                    </div>
+                    <div ref="friendListTarget"></div>
+                </div>
             </div>
             <div @click="forwardModal = false" class="fixed inset-0 z-40"></div>
         </div>

@@ -25,6 +25,8 @@
     <section class="w-screen h-screen flex justify-center items-center bg-yellow-300 relative">
         <div @click="getCoordinates" style="height: 200px; width: 200px;" class="bg-gray-400" ref="firstElement">something</div>
         <div v-if="modalToggle" class="absolute w-20 h-20 bg-white" :style="{top: `343px`, left: `517px`}">modal</div>
+
+        <div>testing for stash</div>
     </section>
 </template>
 

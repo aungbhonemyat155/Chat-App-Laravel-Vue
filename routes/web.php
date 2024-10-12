@@ -10,6 +10,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use function Laravel\Prompts\search;
+
 Route::get('/', function () {
     return redirect("login");
 });
@@ -60,6 +62,8 @@ Route::middleware('auth')->group(function () {
     Route::get("message/delete/{userId}/{messageId}", [MessageController::class, "deleteMessageForYou"]);
     //delet message for everyone
     Route::get("message/delete/{messageId}", [MessageController::class, "deleteMessageForEveryone"]);
+    //search friend
+    Route::get("friend/search", [FriendListsController::class, "search"]);
 });
 
 Route::get("/controller/testing/{user}", [TestingController::class, "controllerTesting"]);
